@@ -49,11 +49,6 @@ public class Position extends HashMap<String, BigDecimal> {
         return entrySet().stream().collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue().negate()), Position::add);
     }
 
-    public Position filter(String... isos){
-        final List<String> ts = Arrays.asList(isos);
-        return entrySet().stream().filter(e -> ts.contains(e.getKey())).collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue()), Position::add);
-    }
-
     public static Position of(String iso, double amount) {
         return new Position().putAmount(iso, amount);
     }
