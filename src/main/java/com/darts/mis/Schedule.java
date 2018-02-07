@@ -8,13 +8,24 @@ import java.util.TreeMap;
 
 public class Schedule extends TreeMap<LocalDate, Position> {
 
-    public void add(LocalDate on, Position p){
-        add(on, on.plusDays(1), p);
+    public Schedule() {
     }
 
-    public void add(LocalDate inc, LocalDate exc, Position p){
+    public Schedule(Schedule schedule){
+        super(schedule);
+    }
+
+    public void addFlow(LocalDate on, Position p){
+        addFlow(on, on.plusDays(1), p);
+    }
+
+    public void addFlow(LocalDate inc, LocalDate exc, Position p){
         merge(inc, p, Position::add);
         merge(exc, p.negate(), Position::add);
+    }
+
+    public void add(Schedule schedule){
+        schedule.forEach((ld, p) -> merge(ld, p, Position::add));
     }
 
     public Position accumulatedTo(LocalDate exc){
