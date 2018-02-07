@@ -1,0 +1,21 @@
+app:
+  realm: mis
+spring:
+  datasource:
+    url: jdbc:mysql://localhost/darts
+    driverClassName: com.mysql.jdbc.Driver
+    username: darts
+    password: target
+    platform: org.hibernate.dialect.MySQLDialect
+
+logging:
+  level:
+    com.darts.mis: info
+---
+spring:
+  profiles: dev
+
+logging:
+  level:
+    com.darts.mis: debug
+    org.hibernate.SQL: info

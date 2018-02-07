@@ -1,0 +1,9 @@
+- username: jpc
+  password: $2a$10$w26AJvSlOdQZjKRNo9WNSeqJ1EthOge97bzwrIzodv2ooLBaT32xa
+  roles:
+    - ADMIN
+    - ACTUATOR
+  accountNonExpired: true
+  accountNonLocked: true
+  credentialsNonExpired: true
+  enabled: true
