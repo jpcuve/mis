@@ -1,6 +1,7 @@
 package com.darts.mis;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -20,6 +21,7 @@ public class Schedule extends TreeMap<LocalDate, Position> {
     }
 
     public void addFlow(LocalDate inc, LocalDate exc, Position p){
+        if (exc.compareTo(inc) <= 0) throw new IllegalArgumentException();
         merge(inc, p, Position::add);
         merge(exc, p.negate(), Position::add);
     }
@@ -48,5 +50,16 @@ public class Schedule extends TreeMap<LocalDate, Position> {
 
     public Position accumulated(LocalDate inc, LocalDate exc){
         return accumulatedTo(exc).subtract(accumulatedTo(inc));
+    }
+
+    public static Schedule split(Position p, int scale, LocalDate inc, LocalDate exc){
+        if (exc.compareTo(inc) <= 0) throw new IllegalArgumentException();
+        final BigDecimal divisor = new BigDecimal(ChronoUnit.DAYS.between(inc, exc));
+        final Position dividend = p.scalar(BigDecimal.ONE.divide(divisor, scale, RoundingMode.FLOOR));
+        final Position remainder = p.subtract(dividend.scalar(divisor));
+        final Schedule schedule = new Schedule();
+        schedule.addFlow(inc, inc.plusDays(1), dividend.add(remainder));
+        schedule.addFlow(inc.plusDays(1), exc, dividend);
+        return schedule;
     }
 }

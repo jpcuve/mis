@@ -6,9 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Created by jpc on 9/29/16.
- */
 public class Position extends HashMap<String, BigDecimal> {
     public static final Position ZERO = new Position();
 
@@ -19,9 +16,13 @@ public class Position extends HashMap<String, BigDecimal> {
         this.putAll(p);
     }
 
-    private Position putAmount(String iso, double amount){
-        this.put(iso, new BigDecimal(amount));
+    public Position putAmount(String iso, BigDecimal amount){
+        this.put(iso, amount);
         return this;
+    }
+
+    public Position putAmount(String iso, double amount){
+        return this.putAmount(iso, new BigDecimal(amount));
     }
 
     public Position normalize(){
@@ -33,7 +34,7 @@ public class Position extends HashMap<String, BigDecimal> {
     }
 
     public Position add(Position that){
-        return entrySet().stream().collect(() -> new Position(that), (p, e) -> p.put(e.getKey(), e.getValue().add(p.getOrDefault(e.getKey(),BigDecimal.ZERO))), Position::add);
+        return entrySet().stream().collect(() -> new Position(that), (p, e) -> p.put(e.getKey(), e.getValue().add(p.getOrDefault(e.getKey(), BigDecimal.ZERO))), Position::add);
     }
 
     public Position subtract(Position that){
@@ -64,8 +65,6 @@ public class Position extends HashMap<String, BigDecimal> {
     public static Position of(String iso1, double amount1, String iso2, double amount2, String iso3, double amount3){
         return new Position().putAmount(iso1, amount1).putAmount(iso2, amount2).putAmount(iso3, amount3);
     }
-
-
 
     @Override
     public boolean equals(Object o) {

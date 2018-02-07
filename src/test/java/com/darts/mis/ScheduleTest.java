@@ -43,6 +43,15 @@ public class ScheduleTest {
         Position accumulated = total.accumulated(LocalDate.of(2018, 1, 4), LocalDate.of(2018, 1, 9));
         System.out.println(accumulated);
         Assert.assertEquals(Position.of("USD", 20, "EUR", 30), accumulated);
+    }
 
+    @Test
+    public void split(){
+        final Schedule schedule = Schedule.split(Position.of("EUR", 10), 2, LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1,4));
+        for (int i = 1; i < 32; i++) {
+            LocalDate of = LocalDate.of(2018, 1, i);
+            System.out.println(of + ": " + schedule.accumulatedTo(of));
+        }
+        Assert.assertEquals(Position.of("EUR", 10), schedule.accumulatedTo(LocalDate.of(2018, 1, 31)));
     }
 }

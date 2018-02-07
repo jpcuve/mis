@@ -17,6 +17,9 @@ public class SubscriptionEdit {
     @Column(name = "price")
     private BigDecimal price;
     @Basic
+    @Column(name = "adjustment")
+    private BigDecimal adjustment;
+    @Basic
     @Column(name = "day_from")
     private LocalDate from;
     @Basic
@@ -67,6 +70,14 @@ public class SubscriptionEdit {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public BigDecimal getAdjustment() {
+        return adjustment;
+    }
+
+    public void setAdjustment(BigDecimal adjustment) {
+        this.adjustment = adjustment;
     }
 
     public SubscriptionEditOperation getOperation() {
