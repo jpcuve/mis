@@ -24,6 +24,7 @@
 		<java.version>1.8</java.version>
         <querydsl.version>4.1.3</querydsl.version>
         <jackson.version>2.8.10</jackson.version>
+		<guava.version>19.0</guava.version>
     </properties>
 
 	<dependencies>
@@ -52,7 +53,13 @@
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        <dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+
+		<dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-apt</artifactId>
             <version>${querydsl.version}</version>
