@@ -24,7 +24,7 @@ public class ScheduleTest {
             LocalDate of = LocalDate.of(2018, 1, i);
             System.out.println(of + ": " + schedule.accumulatedTo(of));
         }
-        Assert.assertEquals(Position.of("USD", 65), schedule.accumulatedTo(LocalDate.of(2018, 2, 1)));
+        Assert.assertEquals(Position.of("EUR", 65), schedule.accumulatedTo(LocalDate.of(2018, 2, 1)));
     }
 
     @Test
