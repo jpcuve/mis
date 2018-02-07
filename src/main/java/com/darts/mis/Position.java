@@ -15,18 +15,6 @@ public class Position extends HashMap<String, BigDecimal> {
     public Position() {
     }
 
-    public Position(String iso, double amount) {
-        this.putAmount(iso, amount);
-    }
-
-    public Position(String iso1, double amount1, String iso2, double amount2){
-        this.putAmount(iso1, amount1).putAmount(iso2, amount2);
-    }
-
-    public Position(String iso1, double amount1, String iso2, double amount2, String iso3, double amount3){
-        this.putAmount(iso1, amount1).putAmount(iso2, amount2).putAmount(iso3, amount3);
-    }
-
     public Position(Position p){
         this.putAll(p);
     }
@@ -52,9 +40,8 @@ public class Position extends HashMap<String, BigDecimal> {
         return add(that.negate());
     }
 
-    public Position scalar(long l){
-        final BigDecimal m = new BigDecimal(l);
-        return entrySet().stream().filter(e -> e.getValue().signum() != 0).collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue().multiply(m)), Position::add);
+    public Position scalar(BigDecimal bd){
+        return entrySet().stream().filter(e -> e.getValue().signum() != 0).collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue().multiply(bd)), Position::add);
     }
 
     public Position negate(){
@@ -65,6 +52,20 @@ public class Position extends HashMap<String, BigDecimal> {
         final List<String> ts = Arrays.asList(isos);
         return entrySet().stream().filter(e -> ts.contains(e.getKey())).collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue()), Position::add);
     }
+
+    public static Position of(String iso, double amount) {
+        return new Position().putAmount(iso, amount);
+    }
+
+    public static Position of(String iso1, double amount1, String iso2, double amount2){
+        return new Position().putAmount(iso1, amount1).putAmount(iso2, amount2);
+    }
+
+    public static Position of(String iso1, double amount1, String iso2, double amount2, String iso3, double amount3){
+        return new Position().putAmount(iso1, amount1).putAmount(iso2, amount2).putAmount(iso3, amount3);
+    }
+
+
 
     @Override
     public boolean equals(Object o) {
