@@ -40,7 +40,9 @@ public class ScheduleTest {
         final Schedule total = new Schedule();
         total.add(eur);
         total.add(usd);
-        System.out.println(total.accumulated(LocalDate.of(2018, 1, 4), LocalDate.of(2018, 1, 9)));
+        Position accumulated = total.accumulated(LocalDate.of(2018, 1, 4), LocalDate.of(2018, 1, 9));
+        System.out.println(accumulated);
+        Assert.assertEquals(Position.of("USD", 20, "EUR", 30), accumulated);
 
     }
 }
