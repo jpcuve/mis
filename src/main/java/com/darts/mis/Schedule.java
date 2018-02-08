@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 public class Schedule extends TreeMap<LocalDate, Position> {
@@ -46,6 +48,18 @@ public class Schedule extends TreeMap<LocalDate, Position> {
 
     public void add(Schedule schedule){
         schedule.forEach((ld, p) -> merge(ld, p, Position::add));
+    }
+
+    public void normalize(){
+        final Set<LocalDate> removes = new HashSet<>();
+        for (final LocalDate localDate: keySet()){
+            final Position position = get(localDate).normalize();
+            if (position.isEmpty()){
+                removes.add(localDate);
+            }
+            put(localDate, position);
+        }
+        removes.forEach(this::remove);
     }
 
     public void mergeFlow(LocalDate when, Position p){

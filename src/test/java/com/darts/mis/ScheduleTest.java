@@ -54,4 +54,15 @@ public class ScheduleTest {
         }
         Assert.assertEquals(Position.of("EUR", 10), schedule.accumulatedTo(LocalDate.of(2018, 1, 31)));
     }
+
+    @Test
+    public void testNormalize(){
+        final Schedule schedule = new Schedule();
+        final LocalDate localDate = LocalDate.of(2018, 1, 1);
+        schedule.mergeFlow(localDate, Position.of("USD", 10, "EUR", 5));
+        schedule.mergeFlow(localDate, Position.of("USD", 15, "EUR", -7));
+        schedule.mergeFlow(localDate, Position.of("USD", -25, "EUR", 2));
+        schedule.normalize();
+        Assert.assertEquals(true, schedule.isEmpty());
+    }
 }

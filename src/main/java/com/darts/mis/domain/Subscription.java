@@ -10,7 +10,11 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table( name = "subscription")
+@NamedQueries({
+        @NamedQuery(name = Subscription.FULL_BY_ID, query = "select s from Subscription s left join fetch s.edits left join fetch s.services where s.id=:id")
+})
 public class Subscription {
+    public static final String FULL_BY_ID = "subscription.fullById";
     @Id
     @Column(name = "id", nullable = false)
     private Long id;
@@ -32,6 +36,8 @@ public class Subscription {
     private Account account;
     @OneToMany(mappedBy = "subscription")
     private Set<SubscriptionEdit> edits;
+    @OneToMany(mappedBy = "subscription")
+    private Set<Service> services;
     @Transient
     private Optional<SubscriptionEdit> current;
 
@@ -96,6 +102,14 @@ public class Subscription {
 
     public void setEdits(Set<SubscriptionEdit> edits) {
         this.edits = edits;
+    }
+
+    public Set<Service> getServices() {
+        return services;
+    }
+
+    public void setServices(Set<Service> services) {
+        this.services = services;
     }
 
     @Override
