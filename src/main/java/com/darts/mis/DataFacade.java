@@ -1,6 +1,7 @@
 package com.darts.mis;
 
 import com.darts.mis.domain.Account;
+import com.darts.mis.domain.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -29,6 +30,14 @@ public class DataFacade {
 
     public Optional<Account> findAccountById(long id){
         return em.createNamedQuery(Account.FULL_BY_ID, Account.class)
+                .setParameter("id", id)
+                .getResultList()
+                .stream()
+                .findFirst();
+    }
+
+    public Optional<Subscription> findSubscriptionById(long id){
+        return em.createNamedQuery(Subscription.FULL_BY_ID, Subscription.class)
                 .setParameter("id", id)
                 .getResultList()
                 .stream()

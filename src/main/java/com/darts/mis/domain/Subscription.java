@@ -1,12 +1,18 @@
 package com.darts.mis.domain;
 
+import com.darts.mis.Position;
+import com.darts.mis.Schedule;
+
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.darts.mis.domain.SubscriptionEditOperation.REM;
 
 @Entity
 @Table( name = "subscription")
@@ -40,11 +46,13 @@ public class Subscription {
     private Set<Service> services;
     @Transient
     private Optional<SubscriptionEdit> current;
+    @Transient
+    private Schedule revenue;
 
     public Optional<SubscriptionEdit> findOnDay(LocalDate day, boolean extend){
         final List<SubscriptionEdit> list = this.edits.stream()
                 .sorted(Comparator.comparing(SubscriptionEdit::getFrom))
-                .filter(e -> !day.isBefore(e.getFrom()) && e.getOperation() != SubscriptionEditOperation.REM && (day.isBefore(e.getTo()) || extend))
+                .filter(e -> !day.isBefore(e.getFrom()) && e.getOperation() != REM && (day.isBefore(e.getTo()) || extend))
                 .collect(Collectors.toList());
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(list.size() - 1));
     }
@@ -54,6 +62,37 @@ public class Subscription {
             current = findOnDay(LocalDate.now(), true);
         }
         return current;
+    }
+
+    private Schedule computeRevenue(){
+        final Schedule schedule = new Schedule();
+        final List<SubscriptionEdit> list = this.edits.stream().sorted(Comparator.comparing(SubscriptionEdit::getFrom)).collect(Collectors.toList());
+        SubscriptionEdit last = null;
+        for (final SubscriptionEdit subscriptionEdit: list){
+            if (subscriptionEdit.getOperation() != REM){
+                if (subscriptionEdit.getPrice().signum() > 0 && subscriptionEdit.getTo().isAfter(subscriptionEdit.getFrom())){
+                    final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice());
+                    schedule.add(new Schedule(subscriptionEdit.getFrom(), subscriptionEdit.getTo(), amount));
+                }
+            }
+            last = subscriptionEdit;
+        }
+        this.services.forEach(service -> {
+            BigDecimal amount = service.getPrice();
+            if (service.getAdjustment() != null){
+                amount = amount.add(service.getAdjustment());
+            }
+            schedule.add(new Schedule(service.getWhen(), Position.of(service.getCurrency(), amount)));
+        });
+        schedule.normalize();
+        return schedule;
+    }
+
+    public Schedule getRevenue(){
+        if (revenue == null){
+            revenue = computeRevenue();
+        }
+        return revenue;
     }
 
     public Long getId() {

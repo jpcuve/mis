@@ -82,6 +82,14 @@ public class SubscriptionEdit {
         return adjustment;
     }
 
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
     public void setAdjustment(BigDecimal adjustment) {
         this.adjustment = adjustment;
     }

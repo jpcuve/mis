@@ -6,7 +6,7 @@ import java.util.Set;
 @Entity
 @Table( name = "account")
 @NamedQueries({
-        @NamedQuery(name = Account.FULL_BY_ID, query = "select a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits where a.id=:id")
+        @NamedQuery(name = Account.FULL_BY_ID, query = "select a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services where a.id=:id")
 })
 public class Account {
     public static final String FULL_BY_ID = "account.fullById";
