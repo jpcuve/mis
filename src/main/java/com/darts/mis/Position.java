@@ -1,6 +1,7 @@
 package com.darts.mis;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,10 @@ public class Position extends HashMap<String, BigDecimal> {
 
     public Position scalar(BigDecimal bd){
         return entrySet().stream().filter(e -> e.getValue().signum() != 0).collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue().multiply(bd)), Position::add);
+    }
+
+    public Position inverseScalar(BigDecimal bd, int scale, RoundingMode roundingMode){
+        return entrySet().stream().filter(e -> e.getValue().signum() != 0).collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue().divide(bd, scale, roundingMode)), Position::add);
     }
 
     public Position negate(){

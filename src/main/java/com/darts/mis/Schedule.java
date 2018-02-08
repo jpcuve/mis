@@ -17,25 +17,41 @@ public class Schedule extends TreeMap<LocalDate, Position> {
     }
 
     public Schedule(LocalDate inc, LocalDate exc, Position p){
+        this(inc, exc, p, 2);
+    }
+
+    public Schedule(LocalDate inc, LocalDate exc, Position p, int scale){
         if (exc.compareTo(inc) <= 0) throw new IllegalArgumentException();
-        put(inc, p);
-        put(exc, p.negate());
+        long days = ChronoUnit.DAYS.between(inc, exc);
+        if (days == 1){
+            mergeFlow(inc, p);
+            mergeFlow(exc, p.negate());
+        } else {
+            final BigDecimal divisor = new BigDecimal(days);
+            final Position dividend = p.inverseScalar(divisor, scale, RoundingMode.FLOOR);
+            final Position remainder = p.subtract(dividend.scalar(divisor));
+            if (remainder.isZero()){
+                mergeFlow(inc, dividend);
+            } else {
+                mergeFlow(inc, dividend.add(remainder));
+                mergeFlow(inc.plusDays(1), remainder.negate());
+            }
+            mergeFlow(exc, dividend.negate());
+        }
     }
 
     public Schedule(LocalDate on, Position p){
-        this(on, on.plusDays(1), p);
+        this(on, on.plusDays(1), p, 0);
     }
 
     public void add(Schedule schedule){
         schedule.forEach((ld, p) -> merge(ld, p, Position::add));
     }
 
-    public void add(LocalDate inc, LocalDate exc, Position p){
-        add(new Schedule(inc, exc, p));
-    }
-
-    public void add(LocalDate on, Position p){
-        add(on, on.plusDays(1), p);
+    public void mergeFlow(LocalDate when, Position p){
+        if (!p.isZero()){
+            merge(when, p, Position::add);
+        }
     }
 
     public Position accumulatedTo(LocalDate exc){
@@ -60,13 +76,4 @@ public class Schedule extends TreeMap<LocalDate, Position> {
         return accumulatedTo(exc).subtract(accumulatedTo(inc));
     }
 
-    public static Schedule split(Position p, int scale, LocalDate inc, LocalDate exc){
-        if (exc.compareTo(inc) <= 0) throw new IllegalArgumentException();
-        final BigDecimal divisor = new BigDecimal(ChronoUnit.DAYS.between(inc, exc));
-        final Position dividend = p.scalar(BigDecimal.ONE.divide(divisor, scale, RoundingMode.FLOOR));
-        final Position remainder = p.subtract(dividend.scalar(divisor));
-        final Schedule schedule = new Schedule(inc, inc.plusDays(1), dividend.add(remainder));
-        schedule.add(inc.plusDays(1), exc, dividend);
-        return schedule;
-    }
 }
