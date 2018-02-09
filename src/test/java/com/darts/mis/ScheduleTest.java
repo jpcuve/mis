@@ -13,15 +13,15 @@ public class ScheduleTest {
     @Before
     public void init(){
         this.eur = new Schedule();
-        eur.add(new Schedule(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 10), Position.of("EUR", 36)));
-        eur.add(new Schedule(LocalDate.of(2018, 1, 3), LocalDate.of(2018, 1, 15), Position.of("EUR", 24)));
+        eur.add(new Schedule(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 10), false, Position.of("EUR", 36)));
+        eur.add(new Schedule(LocalDate.of(2018, 1, 3), LocalDate.of(2018, 1, 15), false, Position.of("EUR", 24)));
         this.usd = new Schedule();
-        usd.add(new Schedule(LocalDate.of(2018,  1, 5), LocalDate.of(2018, 1, 10), Position.of("USD", 25)));
+        usd.add(new Schedule(LocalDate.of(2018,  1, 5), LocalDate.of(2018, 1, 10), false, Position.of("USD", 25)));
     }
 
     @Test
     public void testAccumulationTo(){
-        eur.add(new Schedule(LocalDate.of(2018, 1, 10), LocalDate.of(2018, 1, 15), Position.of("EUR", 5)));
+        eur.add(new Schedule(LocalDate.of(2018, 1, 10), LocalDate.of(2018, 1, 15), false, Position.of("EUR", 5)));
         System.out.println(2 + ": " + eur.accumulatedTo(LocalDate.of(2018, 1, 2)));
         for (int i = 1; i < 32; i++){
             LocalDate of = LocalDate.of(2018, 1, i);
@@ -46,8 +46,8 @@ public class ScheduleTest {
     }
 
     @Test
-    public void split(){
-        final Schedule schedule = new Schedule(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1,4), Position.of("EUR", 10), 2);
+    public void testSplit(){
+        final Schedule schedule = new Schedule(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1,4), false, Position.of("EUR", 10), 2);
         for (int i = 1; i < 32; i++) {
             LocalDate of = LocalDate.of(2018, 1, i);
             System.out.println(of + ": " + schedule.accumulatedTo(of));
@@ -63,6 +63,16 @@ public class ScheduleTest {
         schedule.mergeFlow(localDate, Position.of("USD", 15, "EUR", -7));
         schedule.mergeFlow(localDate, Position.of("USD", -25, "EUR", 2));
         schedule.normalize();
-        Assert.assertEquals(true, schedule.isEmpty());
+        Assert.assertTrue(schedule.isEmpty());
+    }
+
+    @Test
+    public void testYearly(){
+        final LocalDate to = LocalDate.of(2019, 1, 1);
+        final Schedule schedule1 = new Schedule(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 11), false, Position.of("EUR", 10));
+        System.out.println(schedule1.accumulatedTo(to));
+        final Schedule schedule2 = new Schedule(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 11), true, Position.of("EUR", 365));
+        System.out.println(schedule2.accumulatedTo(to));
+        Assert.assertTrue(schedule1.accumulatedTo(to).equals(schedule2.accumulatedTo(to)));
     }
 }

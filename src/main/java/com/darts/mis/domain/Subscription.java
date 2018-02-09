@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.darts.mis.domain.SubscriptionEditOperation.REM;
+import static com.darts.mis.domain.SubscriptionEditOperation.*;
 
 @Entity
 @Table( name = "subscription")
@@ -64,15 +64,25 @@ public class Subscription {
         return current;
     }
 
+    // TODO: take yearly into account
     private Schedule computeRevenue(){
         final Schedule schedule = new Schedule();
         final List<SubscriptionEdit> list = this.edits.stream().sorted(Comparator.comparing(SubscriptionEdit::getFrom)).collect(Collectors.toList());
         SubscriptionEdit last = null;
         for (final SubscriptionEdit subscriptionEdit: list){
-            if (subscriptionEdit.getOperation() != REM){
+            /*
+            if UPG or REM, cancel the amount of 'last' from the start date of the subscriptionEdit
+            to the end date of 'last'
+             */
+            if (subscriptionEdit.getOperation() == REM || subscriptionEdit.getOperation() == UPG){
+                if (last == null || subscriptionEdit.getFrom().isAfter(last.getTo())){
+                    throw new IllegalStateException("Invalid edit sequence, subscription: " + id);
+                }
+            }
+            if (subscriptionEdit.getOperation() == REN || subscriptionEdit.getOperation() == UPG){
                 if (subscriptionEdit.getPrice().signum() > 0 && subscriptionEdit.getTo().isAfter(subscriptionEdit.getFrom())){
                     final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice());
-                    schedule.add(new Schedule(subscriptionEdit.getFrom(), subscriptionEdit.getTo(), amount));
+                    schedule.add(new Schedule(subscriptionEdit.getFrom(), subscriptionEdit.getTo(), subscriptionEdit.isYearlyPrice(), amount));
                 }
             }
             last = subscriptionEdit;

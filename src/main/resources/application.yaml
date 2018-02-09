@@ -2,7 +2,7 @@ app:
   realm: mis
 spring:
   datasource:
-    url: jdbc:mysql://localhost/darts
+    url: jdbc:mysql://localhost/darts?useSSL=false
     driverClassName: com.mysql.jdbc.Driver
     username: darts
     password: target

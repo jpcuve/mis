@@ -18,32 +18,27 @@ public class Schedule extends TreeMap<LocalDate, Position> {
         super(schedule);
     }
 
-    public Schedule(LocalDate inc, LocalDate exc, Position p){
-        this(inc, exc, p, 2);
+    public Schedule(LocalDate inc, LocalDate exc, boolean yearly, Position p){
+        this(inc, exc, yearly, p, 2);
     }
 
-    public Schedule(LocalDate inc, LocalDate exc, Position p, int scale){
+    public Schedule(LocalDate inc, LocalDate exc, boolean yearly, Position p, int scale){
         if (exc.compareTo(inc) <= 0) throw new IllegalArgumentException();
-        long days = ChronoUnit.DAYS.between(inc, exc);
-        if (days == 1){
-            mergeFlow(inc, p);
-            mergeFlow(exc, p.negate());
+        long days = ChronoUnit.DAYS.between(inc, yearly ? inc.plusYears(1) : exc);
+        final BigDecimal divisor = new BigDecimal(days);
+        final Position dividend = p.inverseScalar(divisor, scale, RoundingMode.FLOOR);
+        final Position remainder = p.subtract(dividend.scalar(divisor));
+        if (remainder.isZero()){
+            mergeFlow(inc, dividend);
         } else {
-            final BigDecimal divisor = new BigDecimal(days);
-            final Position dividend = p.inverseScalar(divisor, scale, RoundingMode.FLOOR);
-            final Position remainder = p.subtract(dividend.scalar(divisor));
-            if (remainder.isZero()){
-                mergeFlow(inc, dividend);
-            } else {
-                mergeFlow(inc, dividend.add(remainder));
-                mergeFlow(inc.plusDays(1), remainder.negate());
-            }
-            mergeFlow(exc, dividend.negate());
+            mergeFlow(inc, dividend.add(remainder));
+            mergeFlow(inc.plusDays(1), remainder.negate());
         }
+        mergeFlow(exc, dividend.negate());
     }
 
     public Schedule(LocalDate on, Position p){
-        this(on, on.plusDays(1), p, 0);
+        this(on, on.plusDays(1), false, p, 0);
     }
 
     public void add(Schedule schedule){

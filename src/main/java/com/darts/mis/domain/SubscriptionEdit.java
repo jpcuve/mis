@@ -4,6 +4,8 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 @Entity
 @Table( name = "subscription_edit")
 public class SubscriptionEdit {
@@ -17,14 +19,17 @@ public class SubscriptionEdit {
     @Column(name = "price")
     private BigDecimal price;
     @Basic
-    @Column(name = "currency_fk")
-    private String currency;
+    @Column(name = "yearly")
+    private boolean yearlyPrice;
     @Basic
     @Column(name = "adjustment")
     private BigDecimal adjustment;
     @Basic
     @Column(name = "adjustment_application")
     private int adjustmentApplication;
+    @Basic
+    @Column(name = "currency_fk")
+    private String currency;
     @Basic
     @Column(name = "day_from")
     private LocalDate from;
@@ -37,6 +42,11 @@ public class SubscriptionEdit {
     @ManyToOne
     @JoinColumn(name = "subscription_fk")
     private Subscription subscription;
+
+    @Transient
+    public BigDecimal getInterval(){
+        return new BigDecimal(DAYS.between(from, to));
+    }
 
     public Long getId() {
         return id;
@@ -78,16 +88,16 @@ public class SubscriptionEdit {
         this.price = price;
     }
 
+    public boolean isYearlyPrice() {
+        return yearlyPrice;
+    }
+
+    public void setYearlyPrice(boolean yearlyPrice) {
+        this.yearlyPrice = yearlyPrice;
+    }
+
     public BigDecimal getAdjustment() {
         return adjustment;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
     }
 
     public void setAdjustment(BigDecimal adjustment) {
@@ -100,6 +110,14 @@ public class SubscriptionEdit {
 
     public void setAdjustmentApplication(int adjustmentApplication) {
         this.adjustmentApplication = adjustmentApplication;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
     public SubscriptionEditOperation getOperation() {
