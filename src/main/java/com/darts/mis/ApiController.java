@@ -35,13 +35,26 @@ public class ApiController {
     }
 
     @GetMapping("/subscription-revenues/{id}")
-    public Schedule test(@PathVariable("id") final Long id){
+    public Schedule subscriptionRevenues(@PathVariable("id") final Long id){
         final Optional<Subscription> optionalSubscription = dataFacade.findSubscriptionById(id);
         if (optionalSubscription.isPresent()) {
             return optionalSubscription.get().getRevenue();
         }
         return null;
     }
+
+    @GetMapping("/revenues")
+    public Schedule revenues(){
+        for (final long subscriptionId: dataFacade.findAllSubscriptionIds()){
+            final Optional<Subscription> optionalSubscription = dataFacade.findSubscriptionById(subscriptionId);
+            if (optionalSubscription.isPresent()) {
+                System.out.println(subscriptionId);
+                optionalSubscription.get().getRevenue();
+            }
+        }
+        return null;
+    }
+
 /*
     @Autowired
     private JobOperator jobOperator;

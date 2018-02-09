@@ -23,7 +23,7 @@ public class Schedule extends TreeMap<LocalDate, Position> {
     }
 
     public Schedule(LocalDate inc, LocalDate exc, boolean yearly, Position p, int scale){
-        if (exc.compareTo(inc) <= 0) throw new IllegalArgumentException();
+        if (exc.compareTo(inc) < 0) throw new IllegalArgumentException();
         long days = ChronoUnit.DAYS.between(inc, yearly ? inc.plusYears(1) : exc);
         final BigDecimal divisor = new BigDecimal(days);
         final Position dividend = p.inverseScalar(divisor, scale, RoundingMode.FLOOR);

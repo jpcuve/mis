@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -42,5 +43,9 @@ public class DataFacade {
                 .getResultList()
                 .stream()
                 .findFirst();
+    }
+
+    public List<Long> findAllSubscriptionIds(){
+        return em.createNamedQuery(Subscription.SUBSCRIPTION_ALL_IDS, Long.class).getResultList();
     }
 }

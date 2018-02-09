@@ -17,10 +17,12 @@ import static com.darts.mis.domain.SubscriptionEditOperation.*;
 @Entity
 @Table( name = "subscription")
 @NamedQueries({
-        @NamedQuery(name = Subscription.FULL_BY_ID, query = "select s from Subscription s left join fetch s.edits left join fetch s.services where s.id=:id")
+        @NamedQuery(name = Subscription.FULL_BY_ID, query = "select s from Subscription s left join fetch s.edits left join fetch s.services where s.id=:id"),
+        @NamedQuery(name = Subscription.SUBSCRIPTION_ALL_IDS, query = "select s.id from Subscription s order by s.id")
 })
 public class Subscription {
     public static final String FULL_BY_ID = "subscription.fullById";
+    public static final String SUBSCRIPTION_ALL_IDS = "subscription.allIds";
     @Id
     @Column(name = "id", nullable = false)
     private Long id;
@@ -64,26 +66,38 @@ public class Subscription {
         return current;
     }
 
-    // TODO: take yearly into account
     private Schedule computeRevenue(){
         final Schedule schedule = new Schedule();
-        final List<SubscriptionEdit> list = this.edits.stream().sorted(Comparator.comparing(SubscriptionEdit::getFrom)).collect(Collectors.toList());
+        final List<SubscriptionEdit> list = this.edits.stream().sorted(Comparator.comparing(SubscriptionEdit::getId)).collect(Collectors.toList());
         SubscriptionEdit last = null;
         for (final SubscriptionEdit subscriptionEdit: list){
             /*
-            if UPG or REM, cancel the amount of 'last' from the start date of the subscriptionEdit
+            If UPG or REM, cancel the amount of 'last' from the start date of the subscriptionEdit
             to the end date of 'last'
              */
-            if (subscriptionEdit.getOperation() == REM || subscriptionEdit.getOperation() == UPG){
+            if (subscriptionEdit.getOperation() == REM){
                 if (last == null || subscriptionEdit.getFrom().isAfter(last.getTo())){
                     throw new IllegalStateException("Invalid edit sequence, subscription: " + id);
                 }
             }
+            /*
+            Standard case
+             */
             if (subscriptionEdit.getOperation() == REN || subscriptionEdit.getOperation() == UPG){
-                if (subscriptionEdit.getPrice().signum() > 0 && subscriptionEdit.getTo().isAfter(subscriptionEdit.getFrom())){
+                if (subscriptionEdit.getFrom().isAfter(subscriptionEdit.getTo())){
+                    throw new IllegalStateException("Interval is <= 0 for REN or UPG, subscription: " + id);
+                }
+                // TODO case from==to, happens, with price
+                if (subscriptionEdit.getPrice().signum() > 0){
                     final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice());
                     schedule.add(new Schedule(subscriptionEdit.getFrom(), subscriptionEdit.getTo(), subscriptionEdit.isYearlyPrice(), amount));
                 }
+            }
+            /*
+            There are 5 CRE cases, wtf, from == to & adjustment > 0
+             */
+            if (subscriptionEdit.getOperation() == CRE && subscriptionEdit.getAdjustment() != null){
+                schedule.add(new Schedule(subscriptionEdit.getFrom(), Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice())));
             }
             last = subscriptionEdit;
         }
