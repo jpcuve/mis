@@ -1,5 +1,6 @@
 package com.darts.mis;
 
+import com.darts.mis.domain.Account;
 import com.darts.mis.domain.Subscription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +29,7 @@ import java.util.Set;
 public class ApiController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiController.class);
     private final DataFacade dataFacade;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     public ApiController(DataFacade dataFacade){
@@ -44,12 +46,18 @@ public class ApiController {
     }
 
     @GetMapping("/revenues")
-    public Schedule revenues(){
-        for (final Subscription subscription: dataFacade.findAllSubscriptions()){
-            System.out.println(subscription.getId());
-            subscription.getRevenue();
+    public ArrayNode revenues(){
+        final LocalDate now = LocalDate.now();
+        final ArrayNode ret = mapper.createArrayNode();
+        for (final Account account: dataFacade.findAllAccounts()){
+            final ObjectNode node = ret.addObject();
+            System.out.println(account.getId());
+            node.put("id", account.getId());
+            node.put("name", account.getName());
+            final Schedule revenue = account.getRevenue();
+            node.put("revenue", revenue.accumulatedTo(now).toString());
         }
-        return null;
+        return ret;
     }
 
 /*

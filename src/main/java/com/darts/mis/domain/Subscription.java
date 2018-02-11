@@ -19,7 +19,7 @@ import static com.darts.mis.domain.SubscriptionEditOperation.*;
 @NamedQueries({
         @NamedQuery(name = Subscription.FULL_BY_ID, query = "select s from Subscription s left join fetch s.edits left join fetch s.services where s.id=:id"),
         @NamedQuery(name = Subscription.SUBSCRIPTION_ALL_IDS, query = "select s.id from Subscription s order by s.id"),
-        @NamedQuery(name = Subscription.SUBSCRIPTION_ALL, query = "select s from Subscription s left join fetch s.edits left join fetch s.services")
+        @NamedQuery(name = Subscription.SUBSCRIPTION_ALL, query = "select distinct s from Subscription s left join fetch s.edits left join fetch s.services")
 })
 public class Subscription {
     public static final String FULL_BY_ID = "subscription.fullById";
