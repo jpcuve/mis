@@ -48,4 +48,8 @@ public class DataFacade {
     public List<Long> findAllSubscriptionIds(){
         return em.createNamedQuery(Subscription.SUBSCRIPTION_ALL_IDS, Long.class).getResultList();
     }
+
+    public List<Subscription> findAllSubscriptions(){
+        return em.createNamedQuery(Subscription.SUBSCRIPTION_ALL, Subscription.class).getResultList();
+    }
 }

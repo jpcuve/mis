@@ -45,12 +45,9 @@ public class ApiController {
 
     @GetMapping("/revenues")
     public Schedule revenues(){
-        for (final long subscriptionId: dataFacade.findAllSubscriptionIds()){
-            final Optional<Subscription> optionalSubscription = dataFacade.findSubscriptionById(subscriptionId);
-            if (optionalSubscription.isPresent()) {
-                System.out.println(subscriptionId);
-                optionalSubscription.get().getRevenue();
-            }
+        for (final Subscription subscription: dataFacade.findAllSubscriptions()){
+            System.out.println(subscription.getId());
+            subscription.getRevenue();
         }
         return null;
     }
