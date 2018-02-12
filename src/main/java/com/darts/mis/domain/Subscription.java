@@ -84,15 +84,12 @@ public class Subscription {
             Cancel the amount of 'last' from the start date of the subscriptionEdit
             to the end date of 'last'.
              */
-            if (subscriptionEdit.getOperation() == REM || subscriptionEdit.getOperation() == UPG){
-                if (last == null || subscriptionEdit.getFrom().isAfter(last.getTo())){
-                    throw new IllegalStateException("Invalid edit sequence, subscription: " + id);
-                }
+            if ((subscriptionEdit.getOperation() == REM || subscriptionEdit.getOperation() == UPG) && last != null && subscriptionEdit.getFrom().isBefore(last.getTo())){
                 final Position amount = Position.of(last.getCurrency(), last.getPrice()).negate();
                 if (last.isYearlyPrice()){
-                    schedule.add(Schedule.yearly(from, to, amount));
+                    schedule.add(Schedule.yearly(from, last.getTo(), amount));
                 } else {
-                    schedule.add(Schedule.full(from, to, amount));
+                    schedule.add(Schedule.full(from, last.getTo(), amount));
                 }
             }
 
@@ -101,6 +98,9 @@ public class Subscription {
              */
             if (subscriptionEdit.getOperation() == REN || subscriptionEdit.getOperation() == UPG){
                 if (subscriptionEdit.getPrice().signum() > 0){
+                    if (from.equals(to)){
+                        to = from.plusDays(1); // example: subscription id 19818
+                    }
                     final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice());
                     if (subscriptionEdit.isYearlyPrice()){
                         schedule.add(Schedule.yearly(from, to, amount));

@@ -32,13 +32,26 @@ public class ApiController {
     @GetMapping("/check-subscriptions")
     public String checkSubscriptions(){
         for (final Subscription subscription: dataFacade.findAllSubscriptions()){
+            LOGGER.debug("Checking subscription: " + subscription.getId());
             subscription.getRevenue();
         }
         return "OK";
     }
 
+    @GetMapping("/subscription-revenues/{id}")
+    public ObjectNode subscriptionRevenues(@PathVariable("id") final Long id){
+        final LocalDate now = LocalDate.now();
+        final ObjectNode ret = mapper.createObjectNode();
+        final Optional<Subscription> optionalSubscription = dataFacade.findSubscriptionById(id);
+        if (optionalSubscription.isPresent()) {
+            Schedule revenue = optionalSubscription.get().getRevenue();
+            ret.putPOJO("revenue", revenue);
+            ret.putPOJO("total", revenue.accumulatedTo(now));
+        }
+        return ret;
+    }
 
-    @GetMapping("/revenues/{id}")
+    @GetMapping("/account-revenues/{id}")
     public ObjectNode accountRevenues(@PathVariable("id") final Long id){
         final LocalDate now = LocalDate.now();
         final ObjectNode ret = mapper.createObjectNode();

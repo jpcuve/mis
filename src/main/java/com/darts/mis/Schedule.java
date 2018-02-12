@@ -35,10 +35,14 @@ public class Schedule extends TreeMap<LocalDate, Position> {
             start = inc.plusYears(years);
             schedule.mergePosition(inc, start, p.scalar(new BigDecimal(years)), SCALE);
         }
-        final BigDecimal divisor = new BigDecimal(ChronoUnit.DAYS.between(start, start.plusYears(1)));
-        final Position daily = p.inverseScalar(divisor, SCALE, RoundingMode.FLOOR);
-        schedule.mergeFlow(start, daily);
-        schedule.mergeFlow(exc, daily.negate());
+
+        long remainingDays = ChronoUnit.DAYS.between(start, start.plusYears(1));
+        if (remainingDays > 0){
+            final BigDecimal divisor = new BigDecimal(remainingDays);
+            final Position daily = p.inverseScalar(divisor, SCALE, RoundingMode.FLOOR);
+            schedule.mergeFlow(start, daily);
+            schedule.mergeFlow(exc, daily.negate());
+        }
         return schedule;
     }
 
