@@ -89,7 +89,11 @@ public class Subscription {
                     throw new IllegalStateException("Invalid edit sequence, subscription: " + id);
                 }
                 final Position amount = Position.of(last.getCurrency(), last.getPrice()).negate();
-                schedule.add(new Schedule(from, to, last.isYearlyPrice(), amount));
+                if (last.isYearlyPrice()){
+                    schedule.add(Schedule.yearly(from, to, amount));
+                } else {
+                    schedule.add(Schedule.full(from, to, amount));
+                }
             }
 
             /*
@@ -98,7 +102,11 @@ public class Subscription {
             if (subscriptionEdit.getOperation() == REN || subscriptionEdit.getOperation() == UPG){
                 if (subscriptionEdit.getPrice().signum() > 0){
                     final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice());
-                    schedule.add(new Schedule(from, to, subscriptionEdit.isYearlyPrice(), amount));
+                    if (subscriptionEdit.isYearlyPrice()){
+                        schedule.add(Schedule.yearly(from, to, amount));
+                    } else {
+                        schedule.add(Schedule.full(from, to, amount));
+                    }
                 }
             }
 
@@ -107,10 +115,9 @@ public class Subscription {
              */
             if (subscriptionEdit.getAdjustment() != null){
                 final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getAdjustment());
-                schedule.add(new Schedule(
+                schedule.add(Schedule.full(
                         subscriptionEdit.getAdjustmentApplication() == 2 ? to.plusDays(-1) : from,
                         subscriptionEdit.getAdjustmentApplication() == 1 ? from.plusDays(1) : to,
-                        false,
                         amount));
             }
 
@@ -121,7 +128,7 @@ public class Subscription {
             if (service.getAdjustment() != null){
                 amount = amount.add(service.getAdjustment());
             }
-            schedule.add(new Schedule(service.getWhen(), Position.of(service.getCurrency(), amount)));
+            schedule.add(Schedule.flat(service.getWhen(), Position.of(service.getCurrency(), amount)));
         });
         schedule.normalize();
         return schedule;
