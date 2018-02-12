@@ -135,7 +135,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public UserDetailsService userDetailsService(){
         try{
-            User[] miniUsers = mapper.readValue(ClassLoader.getSystemResourceAsStream("users.yaml"), User[].class);
+            User[] miniUsers = mapper.readValue(getClass().getClassLoader().getSystemResourceAsStream("users.yaml"), User[].class);
             users.putAll(Arrays.stream(miniUsers).collect(Collectors.toMap(User::getUsername, Function.identity())));
         } catch(IOException e){
             LOGGER.error("Cannot read user resource", e);
