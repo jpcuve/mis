@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -49,24 +48,7 @@ public class Subscription {
     @OneToMany(mappedBy = "subscription")
     private Set<Service> services;
     @Transient
-    private Optional<SubscriptionEdit> current;
-    @Transient
     private Schedule revenue;
-
-    public Optional<SubscriptionEdit> findOnDay(LocalDate day, boolean extend){
-        final List<SubscriptionEdit> list = this.edits.stream()
-                .sorted(Comparator.comparing(SubscriptionEdit::getFrom))
-                .filter(e -> !day.isBefore(e.getFrom()) && e.getOperation() != REM && (day.isBefore(e.getTo()) || extend))
-                .collect(Collectors.toList());
-        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(list.size() - 1));
-    }
-
-    public Optional<SubscriptionEdit> getCurrent(){
-        if (current == null){
-            current = findOnDay(LocalDate.now(), true);
-        }
-        return current;
-    }
 
     private Schedule computeRevenue(){
         final Schedule schedule = new Schedule();
@@ -99,7 +81,7 @@ public class Subscription {
             if (subscriptionEdit.getOperation() == REN || subscriptionEdit.getOperation() == UPG){
                 if (subscriptionEdit.getPrice().signum() > 0){
                     if (from.equals(to)){
-                        to = from.plusDays(1); // example: subscription id 19818
+                        to = from.plusDays(1); // example: subscription id 19818. 5 of them in the database as of 2018/02/12
                     }
                     final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice());
                     if (subscriptionEdit.isYearlyPrice()){
