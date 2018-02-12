@@ -73,34 +73,47 @@ public class Subscription {
         final List<SubscriptionEdit> list = this.edits.stream().sorted(Comparator.comparing(SubscriptionEdit::getId)).collect(Collectors.toList());
         SubscriptionEdit last = null;
         for (final SubscriptionEdit subscriptionEdit: list){
+            LocalDate from = subscriptionEdit.getFrom();
+            LocalDate to = subscriptionEdit.getTo();
+            if (from.isAfter(to)){
+                throw new IllegalStateException("Interval is <= 0, subscription: " + id);
+            }
+
             /*
-            If UPG or REM, cancel the amount of 'last' from the start date of the subscriptionEdit
-            to the end date of 'last'
+            If UPG or REM, the amount of the previous edit is cancelled from the 'from' date.
+            Cancel the amount of 'last' from the start date of the subscriptionEdit
+            to the end date of 'last'.
              */
-            if (subscriptionEdit.getOperation() == REM){
+            if (subscriptionEdit.getOperation() == REM || subscriptionEdit.getOperation() == UPG){
                 if (last == null || subscriptionEdit.getFrom().isAfter(last.getTo())){
                     throw new IllegalStateException("Invalid edit sequence, subscription: " + id);
                 }
+                final Position amount = Position.of(last.getCurrency(), last.getPrice()).negate();
+                schedule.add(new Schedule(from, to, last.isYearlyPrice(), amount));
             }
+
             /*
             Standard case
              */
             if (subscriptionEdit.getOperation() == REN || subscriptionEdit.getOperation() == UPG){
-                if (subscriptionEdit.getFrom().isAfter(subscriptionEdit.getTo())){
-                    throw new IllegalStateException("Interval is <= 0 for REN or UPG, subscription: " + id);
-                }
-                // TODO case from==to, happens, with price
                 if (subscriptionEdit.getPrice().signum() > 0){
                     final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice());
-                    schedule.add(new Schedule(subscriptionEdit.getFrom(), subscriptionEdit.getTo(), subscriptionEdit.isYearlyPrice(), amount));
+                    schedule.add(new Schedule(from, to, subscriptionEdit.isYearlyPrice(), amount));
                 }
             }
+
             /*
-            There are 5 CRE cases, wtf, from == to & adjustment > 0
+            For all operations, check adjustment (we have 5 adjustments for CRE cases)
              */
-            if (subscriptionEdit.getOperation() == CRE && subscriptionEdit.getAdjustment() != null){
-                schedule.add(new Schedule(subscriptionEdit.getFrom(), Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice())));
+            if (subscriptionEdit.getAdjustment() != null){
+                final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getAdjustment());
+                schedule.add(new Schedule(
+                        subscriptionEdit.getAdjustmentApplication() == 2 ? to.plusDays(-1) : from,
+                        subscriptionEdit.getAdjustmentApplication() == 1 ? from.plusDays(1) : to,
+                        false,
+                        amount));
             }
+
             last = subscriptionEdit;
         }
         this.services.forEach(service -> {
