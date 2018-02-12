@@ -111,13 +111,15 @@ public class Subscription {
             }
 
             /*
-            For all operations, check adjustment (we have 5 adjustments for CRE cases)
+            For all operations, check adjustment (we have 5 adjustments for CRE cases, that have from==to)
              */
             if (subscriptionEdit.getAdjustment() != null){
                 final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getAdjustment());
+                final LocalDate inc = subscriptionEdit.getAdjustmentApplication() == 2 ? to.plusDays(-1) : from;
+                final LocalDate exc = subscriptionEdit.getAdjustmentApplication() == 1 ? from.plusDays(1) : to;
                 schedule.add(Schedule.full(
-                        subscriptionEdit.getAdjustmentApplication() == 2 ? to.plusDays(-1) : from,
-                        subscriptionEdit.getAdjustmentApplication() == 1 ? from.plusDays(1) : to,
+                        inc,
+                        exc.equals(inc) ? exc.plusDays(1) : exc,
                         amount));
             }
 
