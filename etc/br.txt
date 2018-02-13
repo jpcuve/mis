@@ -1,0 +1,17 @@
+Hello Jean-Pierre
+
+Suite à notre discussion, est-ce que tu penses que tu pourrais me sortir une liste avec:
+
+- les revenus par IP domaine
+- ID client
+- Nom du client
+- Pays
+- Type du client (service provider,etc)
+- Contract date (start date and end date)
+- Number of users
+
+Ce sont des infos que je dois donner à QM. Certaines, je les ai déjà mais les avoir toutes sur le même fichier excel les aidera bien.
+
+Merci d'avance pour ton aide
+
+Laure
