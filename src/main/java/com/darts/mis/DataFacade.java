@@ -2,6 +2,7 @@ package com.darts.mis;
 
 import com.darts.mis.domain.Account;
 import com.darts.mis.domain.Subscription;
+import com.darts.mis.domain.SubscriptionEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -55,5 +56,9 @@ public class DataFacade {
 
     public List<Account> findAllAccounts(){
         return em.createNamedQuery(Account.ACCOUNT_ALL, Account.class).getResultList();
+    }
+
+    public List<String> findAllCurrencies(){
+        return em.createNamedQuery(SubscriptionEdit.SUBSCRIPTION_EDIT_ALL_CURRENCIES, String.class).getResultList();
     }
 }

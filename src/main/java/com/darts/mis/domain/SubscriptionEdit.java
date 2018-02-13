@@ -8,8 +8,12 @@ import java.util.Set;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 @Entity
+@NamedQueries(
+        @NamedQuery(name = SubscriptionEdit.SUBSCRIPTION_EDIT_ALL_CURRENCIES, query = "select distinct se.currency from SubscriptionEdit se")
+)
 @Table( name = "subscription_edit")
 public class SubscriptionEdit {
+    public static final String SUBSCRIPTION_EDIT_ALL_CURRENCIES = "subscriptionEdit.allCurrencies";
     @Id
     @Column(name = "id", nullable = false)
     private Long id;
