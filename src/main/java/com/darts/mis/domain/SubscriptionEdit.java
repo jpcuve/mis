@@ -3,6 +3,7 @@ package com.darts.mis.domain;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -42,6 +43,13 @@ public class SubscriptionEdit {
     @ManyToOne
     @JoinColumn(name = "subscription_fk")
     private Subscription subscription;
+    @ManyToMany
+    @JoinTable(
+            name = "history_query_subscription",
+            joinColumns = @JoinColumn(name = "subscription_edit_fk", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "history_query_fk", referencedColumnName = "id")
+    )
+    private Set<HistoryQuery> historyQueries;
 
     @Transient
     public BigDecimal getInterval(){
@@ -134,6 +142,14 @@ public class SubscriptionEdit {
 
     public void setSubscription(Subscription subscription) {
         this.subscription = subscription;
+    }
+
+    public Set<HistoryQuery> getHistoryQueries() {
+        return historyQueries;
+    }
+
+    public void setHistoryQueries(Set<HistoryQuery> historyQueries) {
+        this.historyQueries = historyQueries;
     }
 
     @Override
