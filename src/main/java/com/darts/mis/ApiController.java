@@ -112,10 +112,13 @@ public class ApiController {
             // first structure output sheet
             final String[] currencySheetTitles = { "Id", "Name", "Country", "User count", "Nature" };
             int firstDataRow = 3;
-            int firstDataCol = currencySheetTitles.length;
             currencySheets.values().forEach(sheet -> {
                 final Row titleRow = sheet.createRow(firstDataRow - 1);
-                int col = firstDataCol;
+                int col;
+                for (col = 0; col < currencySheetTitles.length; col++){
+                    final Cell titleCell = titleRow.createCell(col);
+                    titleCell.setCellValue(currencySheetTitles[col]);
+                }
                 for (final Integer year: years){
                     final Cell yearCell = titleRow.createCell(col);
                     yearCell.setCellValue(year.toString());
@@ -123,18 +126,17 @@ public class ApiController {
                 }
                 int row = firstDataRow;
                 for (Account account: accounts){
-                    col = firstDataCol - 1;
                     final Row accountRow = sheet.createRow(row);
-                    final Cell accountNatureCell = accountRow.createCell(col--);
-                    accountNatureCell.setCellValue(account.getStatus().toString());
-                    final Cell userCountCell = accountRow.createCell(col--);
-                    userCountCell.setCellValue(account.getUsers().size());
-                    final Cell countryCell = accountRow.createCell(col--);
-                    countryCell.setCellValue(account.getCountry());
-                    final Cell nameCell = accountRow.createCell(col--);
-                    nameCell.setCellValue(account.getName());
-                    final Cell idCell = accountRow.createCell(col--);
+                    final Cell idCell = accountRow.createCell(0);
                     idCell.setCellValue(account.getId());
+                    final Cell nameCell = accountRow.createCell(1);
+                    nameCell.setCellValue(account.getName());
+                    final Cell countryCell = accountRow.createCell(2);
+                    countryCell.setCellValue(account.getCountry());
+                    final Cell userCountCell = accountRow.createCell(3);
+                    userCountCell.setCellValue(account.getUsers().size());
+                    final Cell accountNatureCell = accountRow.createCell(4);
+                    accountNatureCell.setCellValue(account.getStatus().toString());
                     row++;
                 }
             });
@@ -142,7 +144,7 @@ public class ApiController {
             int rowNum = firstDataRow;
             for (final Account account: accounts) {
                 final Schedule revenue = account.getRevenue();
-                int colNum = firstDataCol;
+                int colNum = currencySheetTitles.length;
                 for (Integer year: years){
                     final LocalDate inc = LocalDate.of(year, 1, 1);
                     final LocalDate exc = inc.plusYears(1);
