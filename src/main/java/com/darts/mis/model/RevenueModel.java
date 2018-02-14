@@ -49,4 +49,24 @@ public class RevenueModel {
     public List<AccountItem> getAccountItems() {
         return accountItems;
     }
+
+    public Optional<AccountItem> findAccount(long accountId){
+        for (final AccountItem accountItem: accountItems){
+            if (accountItem.getAccount().getId().equals(accountId)){
+                return Optional.of(accountItem);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<SubscriptionItem> findSubscription(long subscriptionId){
+        for (final AccountItem accountItem: accountItems){
+            for (final SubscriptionItem subscriptionItem: accountItem.getSubscriptionItems()){
+                if (subscriptionItem.getSubscription().getId().equals(subscriptionId)){
+                    return Optional.of(subscriptionItem);
+                }
+            }
+        }
+        return Optional.empty();
+    }
 }

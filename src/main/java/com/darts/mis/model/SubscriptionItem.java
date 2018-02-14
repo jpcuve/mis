@@ -127,6 +127,10 @@ public class SubscriptionItem {
         return schedule;
     }
 
+    public Subscription getSubscription() {
+        return subscription;
+    }
+
     public Map<Domain, Schedule> getRevenues() {
         return revenues;
     }
