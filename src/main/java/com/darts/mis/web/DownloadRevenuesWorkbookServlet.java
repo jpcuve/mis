@@ -50,7 +50,9 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
                     .collect(Collectors.toList());
             LOGGER.debug("years: {}", years);
             final XSSFSheet summarySheet = workbook.createSheet("Summary");
+            summarySheet.createRow(0).createCell(0).setCellValue("Summary");
             final XSSFSheet totalSheet = workbook.createSheet("Total");
+            totalSheet.createRow(0).createCell(0).setCellValue("Total");
             final Map<String, XSSFSheet> currencySheets = currencies
                     .stream()
                     .collect(Collectors.toMap(Function.identity(), workbook::createSheet));
