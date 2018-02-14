@@ -17,7 +17,8 @@ public class RevenueModel {
     private final List<AccountItem> accountItems;
 
     public RevenueModel(DataFacade facade) {
-        final List<Account> accounts = facade.findAccountByIds(Arrays.asList(1L, 4L));
+//        final List<Account> accounts = facade.findAccountByIds(Arrays.asList(1L, 4L));
+        final List<Account> accounts = facade.findAllAccounts();
         accounts
                 .stream()
                 .flatMap(a -> a.getSubscriptions().stream())
