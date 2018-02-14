@@ -21,6 +21,15 @@ public class Account {
     @Column(name = "name", nullable = false)
     private String name;
     @Basic
+    @Column(name = "invoicing_country")
+    private String country;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "nature")
+    private AccountNature nature;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private AccountStatus status;
+    @Basic
     @Column(name = "active", nullable = false)
     private boolean active;
     @OneToMany(mappedBy = "account")
@@ -59,6 +68,30 @@ public class Account {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public AccountNature getNature() {
+        return nature;
+    }
+
+    public void setNature(AccountNature nature) {
+        this.nature = nature;
+    }
+
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AccountStatus status) {
+        this.status = status;
     }
 
     public boolean isActive() {
