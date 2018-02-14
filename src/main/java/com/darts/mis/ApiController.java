@@ -6,21 +6,21 @@ import com.darts.mis.domain.Subscription;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class ApiController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiController.class);
+    private static final int FIRST_YEAR = 2006;
     private final DataFacade dataFacade;
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -52,7 +53,7 @@ public class ApiController {
     public ObjectNode subscriptionRevenues(@PathVariable("id") final Long id){
         final LocalDate now = LocalDate.now();
         final ObjectNode ret = mapper.createObjectNode();
-        final Optional<Subscription> optionalSubscription = dataFacade.findSubscriptionById(id);
+        final Optional<Subscription> optionalSubscription = dataFacade.findSubscriptionByIds(Collections.singleton(id)).stream().findFirst();
         if (optionalSubscription.isPresent()) {
             Schedule revenue = optionalSubscription.get().getRevenue();
             ret.putPOJO("revenue", revenue);
@@ -65,7 +66,7 @@ public class ApiController {
     public ObjectNode accountRevenues(@PathVariable("id") final Long id){
         final LocalDate now = LocalDate.now();
         final ObjectNode ret = mapper.createObjectNode();
-        final Optional<Account> optionalAccount = dataFacade.findAccountById(id);
+        final Optional<Account> optionalAccount = dataFacade.findAccountByIds(Collections.singleton(id)).stream().findFirst();
         if (optionalAccount.isPresent()) {
             Schedule revenue = optionalAccount.get().getRevenue();
             ret.putPOJO("revenue", revenue);
@@ -101,7 +102,13 @@ public class ApiController {
             LOGGER.debug("Currencies: {}", currencies);
             final Map<Long, Map<Domain, Long>> queryCounts = dataFacade.countSubscriptionQueriesByDomain();
             LOGGER.debug("Query counts: {}", queryCounts);
-            final XSSFSheet sheet = workbook.createSheet("Total revenues");
+            final XSSFSheet summarySheet = workbook.createSheet("Summary");
+            final XSSFSheet totalSheet = workbook.createSheet("Total");
+            final Map<String, XSSFSheet> currencySheets = currencies.stream().collect(Collectors.toMap(Function.identity(), workbook::createSheet));
+            int yearNow = now.getYear();
+            for (int year = yearNow; year >= FIRST_YEAR; year--){
+
+            }
 /*
             int rowNum = 0;
             for (final Account account: dataFacade.findAllAccounts()) {

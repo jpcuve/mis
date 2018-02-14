@@ -8,11 +8,11 @@ import java.util.Set;
 @Entity
 @Table( name = "account")
 @NamedQueries({
-        @NamedQuery(name = Account.FULL_BY_ID, query = "select a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services where a.id=:id"),
-        @NamedQuery(name = Account.ACCOUNT_ALL, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services")
+        @NamedQuery(name = Account.FULL_BY_IDS, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services where a.id in (:ids)"),
+        @NamedQuery(name = Account.ACCOUNT_ALL, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services"),
 })
 public class Account {
-    public static final String FULL_BY_ID = "account.fullById";
+    public static final String FULL_BY_IDS = "account.fullByIds";
     public static final String ACCOUNT_ALL = "account.all";
     @Id
     @Column(name = "id", nullable = false)

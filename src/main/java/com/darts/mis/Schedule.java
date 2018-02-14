@@ -52,15 +52,6 @@ public class Schedule extends TreeMap<LocalDate, Position> {
         final BigDecimal divisor = new BigDecimal(days);
         final Position daily = p.inverseScalar(divisor);
         final Position remainder = p.subtract(daily.scalar(divisor));
-/*
-        mergeFlow(inc, daily);
-        if (remainder.isZero()){
-            mergeFlow(exc, daily.negate());
-        } else {
-            mergeFlow(exc.plusDays(-1), remainder);
-            mergeFlow(exc, daily.add(remainder).negate());
-        }
-*/
         if (remainder.isZero()){
             mergeFlow(inc, daily);
         } else {

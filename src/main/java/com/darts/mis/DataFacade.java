@@ -29,20 +29,16 @@ public class DataFacade {
         return Optional.of(em.find(clazz, pk));
     }
 
-    public Optional<Account> findAccountById(long id){
-        return em.createNamedQuery(Account.FULL_BY_ID, Account.class)
-                .setParameter("id", id)
-                .getResultList()
-                .stream()
-                .findFirst();
+    public List<Account> findAccountByIds(Collection<Long> ids){
+        return (ids == null || ids.isEmpty()) ? Collections.emptyList() : em.createNamedQuery(Account.FULL_BY_IDS, Account.class)
+                .setParameter("ids", ids)
+                .getResultList();
     }
 
-    public Optional<Subscription> findSubscriptionById(long id){
-        return em.createNamedQuery(Subscription.FULL_BY_ID, Subscription.class)
-                .setParameter("id", id)
-                .getResultList()
-                .stream()
-                .findFirst();
+    public List<Subscription> findSubscriptionByIds(Collection<Long> ids){
+        return (ids == null || ids.isEmpty()) ? Collections.emptyList() : em.createNamedQuery(Subscription.FULL_BY_IDS, Subscription.class)
+                .setParameter("ids", ids)
+                .getResultList();
     }
 
     public List<Long> findAllSubscriptionIds(){
