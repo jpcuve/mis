@@ -1,6 +1,7 @@
 package com.darts.mis;
 
 import com.darts.mis.domain.Account;
+import com.darts.mis.domain.Domain;
 import com.darts.mis.domain.Subscription;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -91,12 +93,16 @@ public class ApiController {
     @GetMapping(value = "/data.xlsx", produces = "application/vnd.ms-excel")
     public byte[] xlsTest(){
         try(
-                XSSFWorkbook workbook = new XSSFWorkbook();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream()
+                final XSSFWorkbook workbook = new XSSFWorkbook();
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream()
         ){
             final LocalDate now = LocalDate.now();
             final List<String> currencies = dataFacade.findAllCurrencies().stream().sorted().collect(Collectors.toList());
+            LOGGER.debug("Currencies: {}", currencies);
+            final Map<Long, Map<Domain, Long>> queryCounts = dataFacade.countSubscriptionQueriesByDomain();
+            LOGGER.debug("Query counts: {}", queryCounts);
             final XSSFSheet sheet = workbook.createSheet("Total revenues");
+/*
             int rowNum = 0;
             for (final Account account: dataFacade.findAllAccounts()) {
                 final Schedule revenue = account.getRevenue();
@@ -107,6 +113,7 @@ public class ApiController {
                 final Cell cellRevenue = row.createCell(1);
                 cellRevenue.setCellValue(position.toString());
             }
+*/
             workbook.write(baos);
             return baos.toByteArray();
 
