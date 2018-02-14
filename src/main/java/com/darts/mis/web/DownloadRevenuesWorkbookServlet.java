@@ -38,6 +38,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
         try(final XSSFWorkbook workbook = new XSSFWorkbook()){
+            final int maxYear = LocalDate.now().getYear();
             final List<String> currencies = revenueModel.getCurrencies()
                     .stream()
                     .sorted()
@@ -45,6 +46,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
             LOGGER.debug("Currencies: {}", currencies);
             final List<Integer> years = revenueModel.getYears()
                     .stream()
+                    .filter(y -> y <= maxYear)
                     .sorted(Comparator.reverseOrder())
                     .collect(Collectors.toList());
             LOGGER.debug("Years: {}", years);
