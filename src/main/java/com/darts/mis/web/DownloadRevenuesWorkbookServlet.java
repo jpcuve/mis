@@ -11,16 +11,16 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +109,8 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
                 }
                 rowNum++;
             }
+            final String filename = String.format("Revenues_%s.xlsx", LocalDateTime.now());
+            res.setHeader("Content-Disposition", "attachment; filename=" + filename);
             workbook.write(res.getOutputStream());
         }
     }
