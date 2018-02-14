@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 public class Schedule extends TreeMap<LocalDate, Position> {
+    public static final Schedule EMPTY = new Schedule();
 
     public Schedule() {
     }

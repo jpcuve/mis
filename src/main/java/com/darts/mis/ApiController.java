@@ -1,8 +1,6 @@
 package com.darts.mis;
 
-import com.darts.mis.domain.Account;
 import com.darts.mis.domain.Domain;
-import com.darts.mis.domain.Subscription;
 import com.darts.mis.model.AccountItem;
 import com.darts.mis.model.RevenueModel;
 import com.darts.mis.model.SubscriptionItem;
@@ -14,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -28,21 +25,20 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class ApiController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiController.class);
-    private final DataFacade dataFacade;
     private final RevenueModel revenueModel;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
-    public ApiController(DataFacade dataFacade){
-        this.dataFacade = dataFacade;
-        this.revenueModel = new RevenueModel(dataFacade);
+    public ApiController(RevenueModel revenueModel){
+        this.revenueModel = revenueModel;
     }
 
     @GetMapping("/check-subscriptions")
     public String checkSubscriptions(){
-        for (final Subscription subscription: dataFacade.findAllSubscriptions()){
-            LOGGER.debug("Checking subscription: " + subscription.getId());
-            final SubscriptionItem subscriptionItem = new SubscriptionItem(subscription, revenueModel.getQueryCounts().getOrDefault(subscription.getId(), Collections.emptyMap()));
+        for (final AccountItem accountItem: revenueModel.getAccountItems()){
+            for (final SubscriptionItem subscriptionItem: accountItem.getSubscriptionItems()){
+                LOGGER.debug("Checking subscription: " + subscriptionItem.getSubscription().getId());
+            }
         }
         return "OK";
     }
