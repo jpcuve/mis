@@ -47,7 +47,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
                     .stream()
                     .sorted(Comparator.reverseOrder())
                     .collect(Collectors.toList());
-            LOGGER.debug("years: {}", years);
+            LOGGER.debug("Years: {}", years);
             final XSSFSheet summarySheet = workbook.createSheet("Summary");
             summarySheet.createRow(0).createCell(0).setCellValue("Summary");
             final XSSFSheet totalSheet = workbook.createSheet("Total");
@@ -91,6 +91,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
             // fill data
             int rowNum = firstDataRow;
             for (final AccountItem accountItem: revenueModel.getAccountItems()) {
+                LOGGER.debug("Account: {} {}", accountItem.getAccount().getId(), accountItem.getAccount().getName());
                 final Map<Domain, Schedule> revenues = accountItem.getRevenues();
                 int colNum = currencySheetTitles.length;
                 for (Integer year: years){

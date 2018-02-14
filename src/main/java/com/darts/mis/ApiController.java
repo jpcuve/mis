@@ -35,12 +35,13 @@ public class ApiController {
 
     @GetMapping("/check-subscriptions")
     public String checkSubscriptions(){
+        int count = 0;
         for (final AccountItem accountItem: revenueModel.getAccountItems()){
             for (final SubscriptionItem subscriptionItem: accountItem.getSubscriptionItems()){
-                LOGGER.debug("Checking subscription: " + subscriptionItem.getSubscription().getId());
+                count++;
             }
         }
-        return "OK";
+        return String.format("OK %s subscriptions checked", count);
     }
 
     @GetMapping("/subscription-revenues/{id}")
