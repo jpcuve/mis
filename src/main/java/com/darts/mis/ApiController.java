@@ -1,29 +1,22 @@
 package com.darts.mis;
 
-import antlr.collections.impl.IntRange;
-import com.darts.mis.domain.Account;
 import com.darts.mis.domain.Domain;
 import com.darts.mis.domain.Subscription;
+import com.darts.mis.model.RevenueModel;
+import com.darts.mis.model.SubscriptionItem;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Created by jpc on 31-05-17.
@@ -33,20 +26,21 @@ import java.util.stream.IntStream;
 @CrossOrigin
 public class ApiController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiController.class);
-    private static final int FIRST_YEAR = 2006;
     private final DataFacade dataFacade;
+    private final RevenueModel revenueModel;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     public ApiController(DataFacade dataFacade){
         this.dataFacade = dataFacade;
+        this.revenueModel = new RevenueModel(dataFacade);
     }
 
     @GetMapping("/check-subscriptions")
     public String checkSubscriptions(){
         for (final Subscription subscription: dataFacade.findAllSubscriptions()){
             LOGGER.debug("Checking subscription: " + subscription.getId());
-            subscription.getRevenue();
+            final SubscriptionItem subscriptionItem = new SubscriptionItem(subscription, revenueModel.getQueryCounts().getOrDefault(subscription.getId(), Collections.emptyMap()));
         }
         return "OK";
     }
@@ -57,13 +51,17 @@ public class ApiController {
         final ObjectNode ret = mapper.createObjectNode();
         final Optional<Subscription> optionalSubscription = dataFacade.findSubscriptionByIds(Collections.singleton(id)).stream().findFirst();
         if (optionalSubscription.isPresent()) {
-            Schedule revenue = optionalSubscription.get().getRevenue();
-            ret.putPOJO("revenue", revenue);
-            ret.putPOJO("total", revenue.accumulatedTo(now));
+            final Subscription subscription = optionalSubscription.get();
+            final SubscriptionItem subscriptionItem = new SubscriptionItem(subscription, revenueModel.getQueryCounts().getOrDefault(subscription.getId(), Collections.emptyMap()));
+            final Map<Domain, Schedule> revenues = subscriptionItem.getRevenues();
+            ret.putPOJO("revenues", revenues);
+            final Map<Domain, Position> totals = revenues.keySet().stream().collect(Collectors.toMap(Function.identity(), d -> revenues.get(d).accumulatedTo(now)));
+            ret.putPOJO("totals", totals);
         }
         return ret;
     }
 
+/*
     @GetMapping("/account-revenues/{id}")
     public ObjectNode accountRevenues(@PathVariable("id") final Long id){
         final LocalDate now = LocalDate.now();
@@ -120,9 +118,11 @@ public class ApiController {
                     titleCell.setCellValue(currencySheetTitles[col]);
                 }
                 for (final Integer year: years){
-                    final Cell yearCell = titleRow.createCell(col);
-                    yearCell.setCellValue(year.toString());
-                    col++;
+                    for (final Domain domain: Domain.values()){
+                        final Cell yearCell = titleRow.createCell(col);
+                        yearCell.setCellValue(String.format("%s %s", year, domain));
+                        col++;
+                    }
                 }
                 int row = firstDataRow;
                 for (Account account: accounts){
@@ -149,12 +149,14 @@ public class ApiController {
                     final LocalDate inc = LocalDate.of(year, 1, 1);
                     final LocalDate exc = inc.plusYears(1);
                     final Position position = revenue.accumulated(inc, exc);
-                    for (String currency: currencies){
-                        final XSSFSheet currencySheet = currencySheets.get(currency);
-                        final Row row = currencySheet.getRow(rowNum);
-                        final BigDecimal amount = position.getOrDefault(currency, BigDecimal.ZERO);
-                        final Cell cellRevenue = row.createCell(colNum);
-                        cellRevenue.setCellValue(amount.doubleValue());
+                    for (final Domain domain: Domain.values()){
+                        for (String currency: currencies){
+                            final XSSFSheet currencySheet = currencySheets.get(currency);
+                            final Row row = currencySheet.getRow(rowNum);
+                            final BigDecimal amount = position.getOrDefault(currency, BigDecimal.ZERO);
+                            final Cell cellRevenue = row.createCell(colNum);
+                            cellRevenue.setCellValue(amount.doubleValue());
+                        }
                     }
                     colNum++;
                 }
@@ -168,4 +170,5 @@ public class ApiController {
         }
         return null;
     }
+*/
 }

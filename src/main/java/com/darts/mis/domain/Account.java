@@ -39,21 +39,6 @@ public class Account {
     @Transient
     private Schedule revenue;
 
-    private Schedule computeRevenue(){
-        final Schedule schedule = new Schedule();
-        for (final Subscription subscription: subscriptions){
-            schedule.add(subscription.getRevenue());
-        }
-        return schedule;
-    }
-
-    public Schedule getRevenue(){
-        if (revenue == null){
-            revenue = computeRevenue();
-        }
-        return revenue;
-    }
-
     public Long getId() {
         return id;
     }

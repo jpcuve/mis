@@ -21,30 +21,8 @@ public class Schedule extends TreeMap<LocalDate, Position> {
         mergePosition(inc, exc, p);
     }
 
-    public static Schedule full(LocalDate inc, LocalDate exc, Position p){
-        return new Schedule(inc, exc, p);
-    }
-
-    public static Schedule yearly(LocalDate inc, LocalDate exc, Position p){
-        final Schedule schedule = new Schedule();
-        LocalDate start = inc;
-        long years = ChronoUnit.YEARS.between(inc, exc);
-        if (years > 0){
-            start = inc.plusYears(years);
-            schedule.mergePosition(inc, start, p.scalar(new BigDecimal(years)));
-        }
-        long remainingDays = ChronoUnit.DAYS.between(start, start.plusYears(1));
-        if (remainingDays > 0){
-            final BigDecimal divisor = new BigDecimal(remainingDays);
-            final Position daily = p.inverseScalar(divisor);
-            schedule.mergeFlow(start, daily);
-            schedule.mergeFlow(exc, daily.negate());
-        }
-        return schedule;
-    }
-
-    public static Schedule flat(LocalDate on, Position p){
-        return new Schedule(on, on.plusDays(1), p);
+    public void scalar(BigDecimal bd){
+        forEach((ld, p) -> put(ld, p.scalar(bd)));
     }
 
     private void mergePosition(LocalDate inc, LocalDate exc, Position p){
@@ -103,6 +81,33 @@ public class Schedule extends TreeMap<LocalDate, Position> {
 
     public Position accumulated(LocalDate inc, LocalDate exc){
         return accumulatedTo(exc).subtract(accumulatedTo(inc));
+    }
+
+
+    public static Schedule full(LocalDate inc, LocalDate exc, Position p){
+        return new Schedule(inc, exc, p);
+    }
+
+    public static Schedule yearly(LocalDate inc, LocalDate exc, Position p){
+        final Schedule schedule = new Schedule();
+        LocalDate start = inc;
+        long years = ChronoUnit.YEARS.between(inc, exc);
+        if (years > 0){
+            start = inc.plusYears(years);
+            schedule.mergePosition(inc, start, p.scalar(new BigDecimal(years)));
+        }
+        long remainingDays = ChronoUnit.DAYS.between(start, start.plusYears(1));
+        if (remainingDays > 0){
+            final BigDecimal divisor = new BigDecimal(remainingDays);
+            final Position daily = p.inverseScalar(divisor);
+            schedule.mergeFlow(start, daily);
+            schedule.mergeFlow(exc, daily.negate());
+        }
+        return schedule;
+    }
+
+    public static Schedule flat(LocalDate on, Position p){
+        return new Schedule(on, on.plusDays(1), p);
     }
 
 }
