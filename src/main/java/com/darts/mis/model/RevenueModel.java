@@ -4,9 +4,12 @@ import com.darts.mis.DataFacade;
 import com.darts.mis.domain.Account;
 import com.darts.mis.domain.Domain;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.xml.crypto.Data;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
@@ -16,15 +19,24 @@ import java.util.stream.Collectors;
 @Scope("singleton")
 public class RevenueModel {
     public static final MathContext MATH_CONTEXT = new MathContext(2, RoundingMode.FLOOR);
-    private final Map<Long, Map<Domain, Long>> queryCounts;
+    private final DataFacade facade;
     private final Set<String> currencies = new HashSet<>();
     private final Set<Integer> years = new HashSet<>();
-    private final List<AccountItem> accountItems;
+    private Map<Long, Map<Domain, Long>> queryCounts;
+    private List<AccountItem> accountItems;
+    @Value("${app.accountIds}")
+    private String accountIds;
 
     @Autowired
     public RevenueModel(DataFacade facade) {
-//        final List<Account> accounts = facade.findAccountByIds(Arrays.asList(1L, 4L));
-        final List<Account> accounts = facade.findAllAccounts();
+        this.facade = facade;
+    }
+
+    @PostConstruct
+    public void init(){
+        final List<Account> accounts = accountIds == null || accountIds.length() == 0 ?
+                facade.findAllAccounts() :
+                facade.findAccountByIds(Arrays.stream(accountIds.split(",")).map(Long::parseLong).collect(Collectors.toList()));
         accounts
                 .stream()
                 .flatMap(a -> a.getSubscriptions().stream())
@@ -45,7 +57,6 @@ public class RevenueModel {
                     return new AccountItem(a, subscriptionItems);
                 })
                 .collect(Collectors.toList());
-        // compute stuff
 
     }
 

@@ -15,6 +15,9 @@ logging:
 spring:
   profiles: dev
 
+app:
+  accountIds: 1,4
+
 logging:
   level:
     com.darts.mis: debug

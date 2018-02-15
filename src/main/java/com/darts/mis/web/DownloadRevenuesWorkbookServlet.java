@@ -13,6 +13,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,6 +34,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadRevenuesWorkbookServlet.class);
     private final RevenueModel revenueModel;
 
+    @Autowired
     public DownloadRevenuesWorkbookServlet(RevenueModel revenueModel){
         this.revenueModel = revenueModel;
     }
