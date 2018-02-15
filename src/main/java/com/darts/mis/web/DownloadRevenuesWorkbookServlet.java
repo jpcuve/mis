@@ -5,6 +5,8 @@ import com.darts.mis.Schedule;
 import com.darts.mis.domain.Domain;
 import com.darts.mis.model.AccountItem;
 import com.darts.mis.model.RevenueModel;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -37,7 +39,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        try(final XSSFWorkbook workbook = new XSSFWorkbook()){
+        try(final HSSFWorkbook workbook = new HSSFWorkbook()){
             final int maxYear = LocalDate.now().getYear();
             final List<String> currencies = revenueModel.getCurrencies()
                     .stream()
@@ -50,11 +52,11 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
                     .sorted(Comparator.reverseOrder())
                     .collect(Collectors.toList());
             LOGGER.debug("Years: {}", years);
-            final XSSFSheet summarySheet = workbook.createSheet("Summary");
+            final HSSFSheet summarySheet = workbook.createSheet("Summary");
             summarySheet.createRow(0).createCell(0).setCellValue("Summary");
-            final XSSFSheet totalSheet = workbook.createSheet("Total");
+            final HSSFSheet totalSheet = workbook.createSheet("Total");
             totalSheet.createRow(0).createCell(0).setCellValue("Total");
-            final Map<String, XSSFSheet> currencySheets = currencies
+            final Map<String, HSSFSheet> currencySheets = currencies
                     .stream()
                     .collect(Collectors.toMap(Function.identity(), workbook::createSheet));
             // first structure output sheet
@@ -102,7 +104,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
                     for (final Domain domain: Domain.values()){
                         final Position position = revenues.getOrDefault(domain, Schedule.EMPTY).accumulated(inc, exc);
                         for (String currency: currencies){
-                            final XSSFSheet currencySheet = currencySheets.get(currency);
+                            final HSSFSheet currencySheet = currencySheets.get(currency);
                             final Row row = currencySheet.getRow(rowNum);
                             final BigDecimal amount = position.getOrDefault(currency, BigDecimal.ZERO);
                             final Cell cellRevenue = row.createCell(colNum);
@@ -113,7 +115,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
                 }
                 rowNum++;
             }
-            final String filename = String.format("Revenues_%s.xlsx", LocalDateTime.now());
+            final String filename = String.format("Revenues_%s.xls", LocalDateTime.now().toString().replace('.', '_').replace('-', '_'));
             res.setHeader("Content-Disposition", "attachment; filename=" + filename);
             workbook.write(res.getOutputStream());
         }
