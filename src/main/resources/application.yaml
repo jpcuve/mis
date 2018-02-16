@@ -1,5 +1,6 @@
 app:
   realm: mis
+  accountIds:
 spring:
   datasource:
     url: jdbc:mysql://localhost/darts?useSSL=false
