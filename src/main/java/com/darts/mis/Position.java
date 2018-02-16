@@ -88,6 +88,6 @@ public class Position extends HashMap<String, BigDecimal> {
 
     @Override
     public String toString() {
-        return String.format("[%s]", entrySet().stream().map((e) -> String.format("%s:%s", e.getKey(), e.getValue())).collect(Collectors.joining(",")));
+        return String.format("%s", entrySet().stream().map((e) -> String.format("%s %s", e.getKey(), e.getValue())).collect(Collectors.joining(",")));
     }
 }
