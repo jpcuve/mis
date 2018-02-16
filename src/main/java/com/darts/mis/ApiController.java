@@ -2,6 +2,7 @@ package com.darts.mis;
 
 import com.darts.mis.domain.Domain;
 import com.darts.mis.model.AccountItem;
+import com.darts.mis.model.ForexModel;
 import com.darts.mis.model.RevenueModel;
 import com.darts.mis.model.SubscriptionItem;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,11 +27,19 @@ import java.util.stream.Collectors;
 public class ApiController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiController.class);
     private final RevenueModel revenueModel;
+    private final ForexModel forexModel;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
-    public ApiController(RevenueModel revenueModel){
+    public ApiController(RevenueModel revenueModel, ForexModel forexModel){
         this.revenueModel = revenueModel;
+        this.forexModel = forexModel;
+    }
+
+    @GetMapping("/check-rates")
+    public String checkRates(){
+        forexModel.hello();
+        return "ok";
     }
 
     @GetMapping("/check-subscriptions")

@@ -3,11 +3,14 @@ package com.darts.mis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,10 +18,10 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class ForexRateDownload {
-    public static final String[] CURRENCIES = { "usd", "cny", "twd", "brl", "inr", "gbp", "jpy" };
+    public static final String[] CURRENCIES = { "brl", "cny", "gbp", "inr", "jpy", "nzd", "twd", "usd" };
 
     public static void main(String[] args) throws Exception {
-        final ObjectMapper mapper = new ObjectMapper();
+        final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         final ArrayNode array = mapper.createArrayNode();
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             Arrays.stream(CURRENCIES).forEach(currency -> {
@@ -56,6 +59,8 @@ public class ForexRateDownload {
                 }
             });
         }
-        mapper.writerWithDefaultPrettyPrinter().writeValue(System.out, array);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(new File("etc/rates.yaml"))){
+            mapper.writerWithDefaultPrettyPrinter().writeValue(fileOutputStream, array);
+        }
     }
 }
