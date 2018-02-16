@@ -26,6 +26,7 @@
         <jackson.version>2.8.10</jackson.version>
 		<guava.version>19.0</guava.version>
 		<poi.version>3.11</poi.version>
+		<httpclient.version>4.3.6</httpclient.version>
     </properties>
 
 	<dependencies>
@@ -102,6 +103,13 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${httpclient.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
