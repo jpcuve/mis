@@ -41,7 +41,6 @@ public class ForexRateDownload {
                         if (comma > 0){
                             final String period = line.substring(0, comma);
                             final BigDecimal rate = new BigDecimal(line.substring(comma + 1));
-                            final BigDecimal inverseRate = new BigDecimal(1 / Double.parseDouble(line.substring(comma + 1)));
                             final LocalDate from = LocalDate.of(
                                     Integer.parseInt(period.substring(0, 4)),
                                     period.endsWith("H1") ? 1 : 7,
@@ -51,7 +50,6 @@ public class ForexRateDownload {
                             node.put("currency", currency.toUpperCase());
                             node.put("from", from.toString());
                             node.put("rate", rate);
-                            node.put("inverseRate", inverseRate);
                         }
                     }
                 } catch (IOException e) {

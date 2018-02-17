@@ -30,18 +30,15 @@ public class ForexModel {
         private final String currency;
         private final LocalDate from;
         private final BigDecimal rate;
-        private final BigDecimal inverseRate;
 
         @JsonCreator
         public Quote(
                 @JsonProperty("currency") String currency,
                 @JsonDeserialize(using = LocalDateDeserializer.class) @JsonProperty("from") LocalDate from,
-                @JsonProperty("rate") BigDecimal rate,
-                @JsonProperty("inverseRate") BigDecimal inverseRate) {
+                @JsonProperty("rate") BigDecimal rate) {
             this.currency = currency;
             this.from = from;
             this.rate = rate;
-            this.inverseRate = inverseRate;
         }
     }
 
@@ -50,7 +47,7 @@ public class ForexModel {
         try{
             final Quote[] quotes = mapper.readValue(getClass().getClassLoader().getSystemResourceAsStream("rates.yaml"), Quote[].class);
             Arrays.stream(quotes).forEach(quote ->
-                rates.computeIfAbsent(quote.from, ld -> new Position()).putAmount(quote.currency, quote.inverseRate)
+                rates.computeIfAbsent(quote.from, ld -> new Position()).putAmount(quote.currency, quote.rate)
             );
         } catch(IOException e){
             LOGGER.error("Cannot read rate resource", e);
@@ -60,4 +57,7 @@ public class ForexModel {
     public void hello(){
     }
 
+    public Position getRate(LocalDate localDate){
+        return null;
+    }
 }
