@@ -58,6 +58,13 @@ public class ForexModel {
     }
 
     public Position getRate(LocalDate localDate){
-        return null;
+        Position p = null;
+        for (final LocalDate ld: rates.keySet()){
+            if (p != null && ld.isAfter(localDate)){
+                break;
+            }
+            p = rates.get(ld);
+        }
+        return p;
     }
 }

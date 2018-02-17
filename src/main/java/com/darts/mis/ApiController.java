@@ -42,6 +42,11 @@ public class ApiController {
         return "ok";
     }
 
+    @GetMapping("/rates/{ld}")
+    public Position rate(@PathVariable("ld") final String localDateAsString){
+        return forexModel.getRate(LocalDate.parse(localDateAsString));
+    }
+
     @GetMapping("/check-subscriptions")
     public String checkSubscriptions(){
         int count = 0;
