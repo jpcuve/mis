@@ -36,12 +36,6 @@ public class ApiController {
         this.forexModel = forexModel;
     }
 
-    @GetMapping("/check-rates")
-    public String checkRates(){
-        forexModel.hello();
-        return "ok";
-    }
-
     @GetMapping("/rates/{ld}")
     public Position rate(@PathVariable("ld") final String localDateAsString){
         return forexModel.getRate(LocalDate.parse(localDateAsString));

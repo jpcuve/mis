@@ -54,9 +54,6 @@ public class ForexModel {
         }
     }
 
-    public void hello(){
-    }
-
     public Position getRate(LocalDate localDate){
         Position p = null;
         for (final LocalDate ld: rates.keySet()){
@@ -66,5 +63,9 @@ public class ForexModel {
             p = rates.get(ld);
         }
         return p;
+    }
+
+    public Position getAverageRate(LocalDate inc, LocalDate exc){
+        return Position.ZERO;
     }
 }
