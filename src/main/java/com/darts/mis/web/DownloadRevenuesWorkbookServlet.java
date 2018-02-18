@@ -2,7 +2,6 @@ package com.darts.mis.web;
 
 import com.darts.mis.Position;
 import com.darts.mis.Schedule;
-import com.darts.mis.domain.AccountNature;
 import com.darts.mis.domain.AccountStatus;
 import com.darts.mis.domain.Domain;
 import com.darts.mis.model.AccountItem;
@@ -123,6 +122,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
             final Row titleRow = sheet.createRow(FIRST_DATA_ROW - 1);
             // TODO average rate over year
             final Row exchangeRateRow = sheet.createRow(FIRST_DATA_ROW - 2);
+            exchangeRateRow.createCell(0).setCellValue("Exchange rates");
             int col = CURRENCY_SHEET_TITLES.length;
             for (final Integer year: years){
                 for (final Domain domain: Domain.values()){
