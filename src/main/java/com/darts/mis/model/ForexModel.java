@@ -47,7 +47,7 @@ public class ForexModel {
         try{
             final Quote[] quotes = mapper.readValue(getClass().getClassLoader().getSystemResourceAsStream("rates.yaml"), Quote[].class);
             Arrays.stream(quotes).forEach(quote ->
-                rates.computeIfAbsent(quote.from, ld -> new Position()).putAmount(quote.currency, quote.rate)
+                rates.computeIfAbsent(quote.from, ld -> Position.of("EUR", 1)).putAmount(quote.currency, quote.rate)
             );
         } catch(IOException e){
             LOGGER.error("Cannot read rate resource", e);

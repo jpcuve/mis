@@ -6,6 +6,7 @@ import com.darts.mis.domain.AccountNature;
 import com.darts.mis.domain.AccountStatus;
 import com.darts.mis.domain.Domain;
 import com.darts.mis.model.AccountItem;
+import com.darts.mis.model.ForexModel;
 import com.darts.mis.model.RevenueModel;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -38,13 +39,15 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
     private static final String[] CURRENCY_SHEET_TITLES = { "Id", "Name", "Country", "User count", "Status" };
     public static final int FIRST_DATA_ROW = 3;
     private final RevenueModel revenueModel;
+    private final ForexModel forexModel;
     private List<String> currencies;
     private List<Integer> years;
     private List<AccountItem> accountItems;
 
     @Autowired
-    public DownloadRevenuesWorkbookServlet(RevenueModel revenueModel){
+    public DownloadRevenuesWorkbookServlet(RevenueModel revenueModel, ForexModel forexModel){
         this.revenueModel = revenueModel;
+        this.forexModel = forexModel;
     }
 
     @PostConstruct
@@ -113,9 +116,22 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
     }
 
     private void fillCurrencySheets(final Map<String, HSSFSheet> sheets){
-        sheets.values().forEach(sheet -> {
+        sheets.forEach((currency, sheet) -> {
+            final Map<Integer, Position> yearlyExchangeRates = years
+                    .stream()
+                    .collect(Collectors.toMap(Function.identity(), year -> forexModel.getRate(LocalDate.of(year, 1, 1))));
             final Row titleRow = sheet.createRow(FIRST_DATA_ROW - 1);
-            int col = fillAccountTitle(titleRow, 0);
+            // TODO average rate over year
+            final Row exchangeRateRow = sheet.createRow(FIRST_DATA_ROW - 2);
+            int col = CURRENCY_SHEET_TITLES.length;
+            for (final Integer year: years){
+                for (final Domain domain: Domain.values()){
+                    final Cell exchangeRateCell = exchangeRateRow.createCell(col);
+                    exchangeRateCell.setCellValue(yearlyExchangeRates.getOrDefault(year, Position.ZERO).get(currency).doubleValue());
+                    col++;
+                }
+            }
+            col = fillAccountTitle(titleRow, 0);
             for (final Integer year: years){
                 for (final Domain domain: Domain.values()){
                     final Cell yearCell = titleRow.createCell(col);
