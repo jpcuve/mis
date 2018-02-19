@@ -70,7 +70,11 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
 
     private void fillSummarySheet(final HSSFSheet sheet){
         sheet.createRow(0).createCell(0).setCellValue("Summary");
-
+        final AtomicInteger ai = new AtomicInteger(2);
+        sheet.createRow(ai.getAndIncrement()).createCell(0).setCellValue("Exchange rates against EUR come from the ECB");
+        sheet.createRow(ai.getAndIncrement()).createCell(0).setCellValue("Revenues are computed based on subscriptions and services, and adjusted against invoices");
+        sheet.createRow(ai.getAndIncrement()).createCell(0).setCellValue("Revenues are split over domains based on the number of queries in the subscription");
+        sheet.createRow(ai.getAndIncrement()).createCell(0).setCellValue("If number of queries is not available, revenues are split evenly over the domains of the subscription");
     }
 
 
