@@ -4,6 +4,7 @@ import com.darts.mis.Position;
 import com.darts.mis.Schedule;
 import com.darts.mis.domain.AccountStatus;
 import com.darts.mis.domain.Domain;
+import com.darts.mis.domain.SubscriptionEdit;
 import com.darts.mis.model.AccountItem;
 import com.darts.mis.model.ForexModel;
 import com.darts.mis.model.RevenueModel;
@@ -24,10 +25,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,7 +33,7 @@ import java.util.stream.Collectors;
 @WebServlet(urlPatterns = { "/download-revenues" })
 public class DownloadRevenuesWorkbookServlet extends HttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadRevenuesWorkbookServlet.class);
-    private static final String[] CURRENCY_SHEET_TITLES = { "Id", "Name", "Country", "User count", "Status" };
+    private static final String[] CURRENCY_SHEET_TITLES = { "Id", "Name", "Country", "User count", "Status", "Last start", "Last end" };
     public static final int FIRST_DATA_ROW = 3;
     private final RevenueModel revenueModel;
     private final ForexModel forexModel;
@@ -89,6 +87,9 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
         row.createCell(ai.getAndIncrement()).setCellValue(accountItem.getAccount().getCountry());
         row.createCell(ai.getAndIncrement()).setCellValue(accountItem.getAccount().getUsers().size());
         row.createCell(ai.getAndIncrement()).setCellValue(accountItem.getAccount().getStatus().toString());
+        final Optional<SubscriptionEdit> optionalSubscriptionEdit = accountItem.getLastRenewOrUpdate();
+        row.createCell(ai.getAndIncrement()).setCellValue(optionalSubscriptionEdit.map(se -> se.getFrom().toString()).orElse("-"));
+        row.createCell(ai.getAndIncrement()).setCellValue(optionalSubscriptionEdit.map(se -> se.getTo().toString()).orElse("-"));
         return ai.get();
     }
 

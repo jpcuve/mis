@@ -17,9 +17,11 @@ import static com.darts.mis.domain.SubscriptionEditOperation.*;
 public class SubscriptionItem {
     private final Subscription subscription;
     private final Map<Domain, Schedule> revenues;
+    private final List<SubscriptionEdit> edits;
 
     public SubscriptionItem(Subscription subscription, Map<Domain, Long> queryCounts) {
         this.subscription = subscription;
+        this.edits = subscription.getEdits().stream().sorted(Comparator.comparing(SubscriptionEdit::getId)).collect(Collectors.toList());
         final Schedule revenue = new Schedule();
         revenue.add(computeSubscriptionRevenue());
         revenue.add(computeServiceRevenue());
@@ -34,6 +36,10 @@ public class SubscriptionItem {
             schedule.scalar(split.get(domain));
             return schedule;
         }));
+    }
+
+    public List<SubscriptionEdit> getEdits() {
+        return edits;
     }
 
     private static Map<Domain, BigDecimal> computeSplit(Map<Domain, Long> queryCounts){
@@ -57,9 +63,8 @@ public class SubscriptionItem {
 
     private Schedule computeSubscriptionRevenue(){
         final Schedule schedule = new Schedule();
-        final List<SubscriptionEdit> list = subscription.getEdits().stream().sorted(Comparator.comparing(SubscriptionEdit::getId)).collect(Collectors.toList());
         SubscriptionEdit last = null;
-        for (final SubscriptionEdit subscriptionEdit: list){
+        for (final SubscriptionEdit subscriptionEdit: this.edits){
             LocalDate from = subscriptionEdit.getFrom();
             LocalDate to = subscriptionEdit.getTo();
             if (from.isAfter(to)){
