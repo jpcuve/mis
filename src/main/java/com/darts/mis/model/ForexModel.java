@@ -16,7 +16,9 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.TreeMap;
 
 @Component
@@ -66,6 +68,22 @@ public class ForexModel {
     }
 
     public Position getAverageRate(LocalDate inc, LocalDate exc){
-        return Position.ZERO;
+        Map.Entry<LocalDate, Position> lastEntry = null;
+        BigDecimal totalDays = BigDecimal.ZERO;
+        Position position = Position.ZERO;
+        for (final Map.Entry<LocalDate, Position> entry: rates.entrySet()){
+            if (lastEntry != null && entry.getKey().isAfter(lastEntry.getKey())){
+                LocalDate limit = exc.isBefore(entry.getKey()) ? exc : entry.getKey();
+                BigDecimal interval = new BigDecimal(ChronoUnit.DAYS.between(limit, lastEntry.getKey()));
+                totalDays = totalDays.add(interval);
+                position = position.add(lastEntry.getValue().scalar(interval));
+                if (limit.equals(entry.getKey())){
+                    break;
+                }
+            }
+            lastEntry = entry;
+        }
+        position = position.inverseScalar(totalDays);
+        return position;
     }
 }

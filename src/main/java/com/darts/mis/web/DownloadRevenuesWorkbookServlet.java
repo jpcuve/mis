@@ -74,7 +74,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
         sheet.createRow(ai.getAndIncrement()).createCell(0).setCellValue("Exchange rates against EUR come from the ECB");
         sheet.createRow(ai.getAndIncrement()).createCell(0).setCellValue("Revenues are computed based on subscriptions and services, and adjusted against invoices");
         sheet.createRow(ai.getAndIncrement()).createCell(0).setCellValue("Revenues are split over domains based on the number of queries in the subscription");
-        sheet.createRow(ai.getAndIncrement()).createCell(0).setCellValue("If number of queries is not available, revenues are split evenly over the domains of the subscription");
+        sheet.createRow(ai.getAndIncrement()).createCell(0).setCellValue("If the number of queries is not available, revenues are split evenly over the domains of the subscription");
     }
 
 
