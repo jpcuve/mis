@@ -46,8 +46,12 @@ public class Position extends HashMap<String, BigDecimal> {
         return entrySet().stream().filter(e -> e.getValue().signum() != 0).collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue().multiply(bd)), Position::add);
     }
 
+    public Position inverseScalar(BigDecimal bd, MathContext mathContext){
+        return entrySet().stream().filter(e -> e.getValue().signum() != 0).collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue().divide(bd, mathContext)), Position::add);
+    }
+
     public Position inverseScalar(BigDecimal bd){
-        return entrySet().stream().filter(e -> e.getValue().signum() != 0).collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue().divide(bd, MATH_CONTEXT)), Position::add);
+        return inverseScalar(bd, MATH_CONTEXT);
     }
 
     public Position negate(){

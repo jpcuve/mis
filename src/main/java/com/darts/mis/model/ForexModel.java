@@ -15,16 +15,17 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Component
 @Scope("singleton")
 public class ForexModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(ForexModel.class);
+    private static final MathContext MATH_CONTEXT = new MathContext(6, RoundingMode.FLOOR);
     private final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     private TreeMap<LocalDate, Position> rates = new TreeMap<>();
 
@@ -45,21 +46,27 @@ public class ForexModel {
     }
 
     @PostConstruct
-    public void init(){
-        try{
+    public void init() {
+        try {
             final Quote[] quotes = mapper.readValue(getClass().getClassLoader().getSystemResourceAsStream("rates.yaml"), Quote[].class);
             Arrays.stream(quotes).forEach(quote ->
-                rates.computeIfAbsent(quote.from, ld -> Position.of("EUR", 1)).putAmount(quote.currency, quote.rate)
+                    rates.computeIfAbsent(quote.from, ld -> Position.of("EUR", 1)).putAmount(quote.currency, quote.rate)
             );
-        } catch(IOException e){
+            final List<LocalDate> localDates = new ArrayList<>(rates.keySet());
+            if (localDates.isEmpty()) {
+                throw new IllegalStateException("No rates");
+            }
+            rates.put(LocalDate.MIN, rates.get(localDates.get(0)));
+            rates.put(LocalDate.MAX, rates.get(localDates.get(localDates.size() - 1)));
+        } catch (IOException e) {
             LOGGER.error("Cannot read rate resource", e);
         }
     }
 
-    public Position getRate(LocalDate localDate){
+    public Position getRate(LocalDate localDate) {
         Position p = null;
-        for (final LocalDate ld: rates.keySet()){
-            if (p != null && ld.isAfter(localDate)){
+        for (final LocalDate ld : rates.keySet()) {
+            if (p != null && ld.isAfter(localDate)) {
                 break;
             }
             p = rates.get(ld);
@@ -67,23 +74,26 @@ public class ForexModel {
         return p;
     }
 
-    public Position getAverageRate(LocalDate inc, LocalDate exc){
+    public Position getAverageRate(LocalDate inc, LocalDate exc) {
+        if (!exc.isAfter(inc)) throw new IllegalArgumentException();
         Map.Entry<LocalDate, Position> lastEntry = null;
         BigDecimal totalDays = BigDecimal.ZERO;
         Position position = Position.ZERO;
-        for (final Map.Entry<LocalDate, Position> entry: rates.entrySet()){
-            if (lastEntry != null && entry.getKey().isAfter(lastEntry.getKey())){
-                LocalDate limit = exc.isBefore(entry.getKey()) ? exc : entry.getKey();
-                BigDecimal interval = new BigDecimal(ChronoUnit.DAYS.between(limit, lastEntry.getKey()));
-                totalDays = totalDays.add(interval);
-                position = position.add(lastEntry.getValue().scalar(interval));
-                if (limit.equals(entry.getKey())){
-                    break;
+        for (final Map.Entry<LocalDate, Position> entry : rates.entrySet()) {
+            if (lastEntry != null) {
+                LocalDate from = inc.isAfter(lastEntry.getKey()) ? inc : lastEntry.getKey();
+                LocalDate to = exc.isAfter(entry.getKey()) ? entry.getKey() : exc;
+//                LOGGER.debug("From: {}, to: {}", from, to);
+                if (to.isAfter(from)) {
+                    BigDecimal interval = new BigDecimal(ChronoUnit.DAYS.between(from, to));
+//                    LOGGER.debug("Using day count: {}", interval);
+                    totalDays = totalDays.add(interval);
+                    position = position.add(lastEntry.getValue().scalar(interval));
                 }
             }
             lastEntry = entry;
         }
-        position = position.inverseScalar(totalDays);
+        position = position.inverseScalar(totalDays, MATH_CONTEXT);
         return position;
     }
 }
