@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class ForexRateDownload {
-    public static final String[] CURRENCIES = { "brl", "cny", "gbp", "inr", "jpy", "nzd", "twd", "usd" };
+    public static final String[] CURRENCIES = { "brl", "cny", "gbp", "inr", "hkd", "jpy", "nzd", "twd", "usd" };
 
     public static void main(String[] args) throws Exception {
         final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());

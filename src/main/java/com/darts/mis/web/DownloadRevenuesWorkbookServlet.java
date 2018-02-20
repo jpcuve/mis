@@ -132,7 +132,11 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
             for (final Integer year: years){
                 for (final Domain domain: Domain.values()){
                     final Cell exchangeRateCell = exchangeRateRow.createCell(col);
-                    exchangeRateCell.setCellValue(yearlyExchangeRates.getOrDefault(year, Position.ZERO).get(currency).doubleValue());
+                    final Position exchangeRate = yearlyExchangeRates.getOrDefault(year, Position.ZERO);
+                    if (!exchangeRate.containsKey(currency)){
+                        throw new IllegalStateException("Exchange rate missing for currency: " + currency);
+                    }
+                    exchangeRateCell.setCellValue(exchangeRate.get(currency).doubleValue());
                     col++;
                 }
             }
