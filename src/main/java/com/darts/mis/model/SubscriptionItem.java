@@ -5,6 +5,7 @@ import com.darts.mis.Schedule;
 import com.darts.mis.domain.Domain;
 import com.darts.mis.domain.Subscription;
 import com.darts.mis.domain.SubscriptionEdit;
+import com.darts.mis.domain.SubscriptionEditOperation;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,10 +15,11 @@ import java.util.stream.Collectors;
 
 import static com.darts.mis.domain.SubscriptionEditOperation.*;
 
-public class SubscriptionItem {
+public class SubscriptionItem implements Comparable<SubscriptionItem> {
     private final Subscription subscription;
     private final Map<Domain, Schedule> revenues;
     private final List<SubscriptionEdit> edits;
+    private final Optional<SubscriptionEdit> lastRenewOrUpdate;
 
     public SubscriptionItem(Subscription subscription, Map<Domain, Long> queryCounts) {
         this.subscription = subscription;
@@ -36,10 +38,30 @@ public class SubscriptionItem {
             schedule.scalar(split.get(domain));
             return schedule;
         }));
+        this.lastRenewOrUpdate = edits
+                .stream()
+                .filter(se -> se.getOperation() == SubscriptionEditOperation.REN || se.getOperation() == SubscriptionEditOperation.UPG)
+                .reduce((se1, se2) -> se2);
     }
 
     public List<SubscriptionEdit> getEdits() {
         return edits;
+    }
+
+    public Optional<SubscriptionEdit> getLastRenewOrUpdate(){
+        return lastRenewOrUpdate;
+    }
+
+    public Subscription getSubscription() {
+        return subscription;
+    }
+
+    public Map<Domain, Schedule> getRevenues() {
+        return revenues;
+    }
+
+    public boolean isCancelled(){
+        return !edits.isEmpty() && edits.get(edits.size() - 1).getOperation() == SubscriptionEditOperation.REM;
     }
 
     private static Map<Domain, BigDecimal> computeSplit(Map<Domain, Long> queryCounts){
@@ -132,11 +154,8 @@ public class SubscriptionItem {
         return schedule;
     }
 
-    public Subscription getSubscription() {
-        return subscription;
-    }
-
-    public Map<Domain, Schedule> getRevenues() {
-        return revenues;
+    @Override
+    public int compareTo(SubscriptionItem o) {
+        return lastRenewOrUpdate.map(SubscriptionEdit::getTo).orElse(LocalDate.MIN).compareTo(o.lastRenewOrUpdate.map(SubscriptionEdit::getTo).orElse(LocalDate.MIN));
     }
 }

@@ -5,9 +5,7 @@ import com.darts.mis.Schedule;
 import com.darts.mis.domain.AccountStatus;
 import com.darts.mis.domain.Domain;
 import com.darts.mis.domain.SubscriptionEdit;
-import com.darts.mis.model.AccountItem;
-import com.darts.mis.model.ForexModel;
-import com.darts.mis.model.RevenueModel;
+import com.darts.mis.model.*;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -33,18 +31,27 @@ import java.util.stream.Collectors;
 @WebServlet(urlPatterns = { "/download-revenues" })
 public class DownloadRevenuesWorkbookServlet extends HttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadRevenuesWorkbookServlet.class);
-    private static final String[] CURRENCY_SHEET_TITLES = { "Id", "Name", "Country", "User count", "Status", "Last start", "Last end" };
+    private static final String[] CURRENCY_SHEET_TITLES = { "Id", "Name", "Country", "User count", "Status" };
     public static final int FIRST_DATA_ROW = 3;
     private final RevenueModel revenueModel;
     private final ForexModel forexModel;
     private List<String> currencies;
     private List<Integer> years;
     private List<AccountItem> accountItems;
+    private final AccountSheetBuilder accountSheetBuilder;
+    private final SubscriptionSheetBuilder subscriptionSheetBuilder;
 
     @Autowired
-    public DownloadRevenuesWorkbookServlet(RevenueModel revenueModel, ForexModel forexModel){
+    public DownloadRevenuesWorkbookServlet(
+            RevenueModel revenueModel,
+            ForexModel forexModel,
+            AccountSheetBuilder accountSheetBuilder,
+            SubscriptionSheetBuilder subscriptionSheetBuilder
+    ){
         this.revenueModel = revenueModel;
         this.forexModel = forexModel;
+        this.accountSheetBuilder = accountSheetBuilder;
+        this.subscriptionSheetBuilder = subscriptionSheetBuilder;
     }
 
     @PostConstruct
@@ -91,15 +98,12 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
         row.createCell(ai.getAndIncrement()).setCellValue(accountItem.getAccount().getCountry());
         row.createCell(ai.getAndIncrement()).setCellValue(accountItem.getAccount().getUsers().size());
         row.createCell(ai.getAndIncrement()).setCellValue(accountItem.getAccount().getStatus().toString());
-        final Optional<SubscriptionEdit> optionalSubscriptionEdit = accountItem.getLastRenewOrUpdate();
-        row.createCell(ai.getAndIncrement()).setCellValue(optionalSubscriptionEdit.map(se -> se.getFrom().toString()).orElse("-"));
-        row.createCell(ai.getAndIncrement()).setCellValue(optionalSubscriptionEdit.map(se -> se.getTo().toString()).orElse("-"));
         return ai.get();
     }
 
     private void fillTotalSheet(final HSSFSheet sheet){
         final LocalDate now = LocalDate.now();
-        sheet.createRow(0).createCell(0).setCellValue("Total @ " + now);
+        sheet.createRow(0).createCell(0).setCellValue("Total revenues accumulated to: " + now);
         final Row titleRow = sheet.createRow(FIRST_DATA_ROW - 1);
         int col = fillAccountTitle(titleRow, 0);
         for (final Domain domain: Domain.values()){
@@ -123,7 +127,10 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
         sheets.forEach((currency, sheet) -> {
             final Map<Integer, Position> yearlyExchangeRates = years
                     .stream()
-                    .collect(Collectors.toMap(Function.identity(), year -> forexModel.getRate(LocalDate.of(year, 1, 1))));
+                    .collect(Collectors.toMap(
+                            Function.identity(),
+                            year -> forexModel.getAverageRate(LocalDate.of(year, 1, 1), LocalDate.of(year + 1, 1, 1)))
+                    );
             final Row titleRow = sheet.createRow(FIRST_DATA_ROW - 1);
             // TODO average rate over year
             final Row exchangeRateRow = sheet.createRow(FIRST_DATA_ROW - 2);
@@ -182,6 +189,8 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
         try(final HSSFWorkbook workbook = new HSSFWorkbook()){
+            accountSheetBuilder.addSheets(workbook);
+            subscriptionSheetBuilder.addSheets(workbook);
             fillSummarySheet(workbook.createSheet("Summary"));
             fillTotalSheet(workbook.createSheet("Total"));
             fillCurrencySheets(currencies

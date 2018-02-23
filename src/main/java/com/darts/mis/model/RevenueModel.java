@@ -48,10 +48,12 @@ public class RevenueModel {
         this.queryCounts = facade.countSubscriptionQueriesByDomain();
         this.accountItems = accounts
                 .stream()
+                .sorted(Comparator.comparing(Account::getName))
                 .map(a -> {
                     final List<SubscriptionItem> subscriptionItems = a.getSubscriptions()
                             .stream()
                             .map(s -> new SubscriptionItem(s, queryCounts.getOrDefault(s.getId(), Collections.emptyMap())))
+                            .sorted()
                             .collect(Collectors.toList());
                     return new AccountItem(a, subscriptionItems);
                 })
