@@ -40,17 +40,20 @@ public class SubscriptionSheetBuilder implements SheetBuilder {
         Arrays.stream(Domain.values()).forEach(domain -> titleRow.createCell(titleCol.getAndIncrement()).setCellValue(domain.toString()));
         for (final AccountItem accountItem: revenueModel.getAccountItems()) {
             for (final SubscriptionItem subscriptionItem: accountItem.getSubscriptionItems()){
-                final Row subscriptionRow = sheet.createRow(row.getAndIncrement());
-                final AtomicInteger subscriptionCol = new AtomicInteger();
-                subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getId());
-                subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getName());
-                subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.getSubscription().getId());
-                final Optional<SubscriptionEdit> optionalLastRenewOrUpdate = subscriptionItem.getLastRenewOrUpdate();
-                subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(optionalLastRenewOrUpdate.map(se -> se.getFrom().toString()).orElse("-"));
-                subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(optionalLastRenewOrUpdate.map(se -> se.getTo().toString()).orElse("-"));
-                subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.isCancelled());
-                final Set<Domain> subscriptionDomains = subscriptionItem.getSubscription().getDomains();
-                Arrays.stream(Domain.values()).forEach(domain -> subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionDomains.contains(domain)));
+                subscriptionItem.getLastRenewOrUpdate().ifPresent(se -> {
+                    if (!(se.getTo().isBefore(from) || se.getFrom().isAfter(to))){ // TODO change this test to any subscription exists between from and to
+                        final Row subscriptionRow = sheet.createRow(row.getAndIncrement());
+                        final AtomicInteger subscriptionCol = new AtomicInteger();
+                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getId());
+                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getName());
+                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.getSubscription().getId());
+                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(se.getFrom().toString());
+                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(se.getTo().toString());
+                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.isCancelled());
+                        final Set<Domain> subscriptionDomains = subscriptionItem.getSubscription().getDomains();
+                        Arrays.stream(Domain.values()).forEach(domain -> subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionDomains.contains(domain)));
+                    }
+                });
             }
         }
 
