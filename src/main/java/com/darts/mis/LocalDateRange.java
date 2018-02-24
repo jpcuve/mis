@@ -1,6 +1,7 @@
 package com.darts.mis;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public class LocalDateRange {
     private final LocalDate incLo;
@@ -12,6 +13,10 @@ public class LocalDateRange {
         this.excHi = excHi;
     }
 
+    public LocalDateRange(LocalDate on){
+        this(on, on.plusDays(1L));
+    }
+
     public LocalDate getFrom() {
         return incLo;
     }
@@ -20,12 +25,24 @@ public class LocalDateRange {
         return excHi;
     }
 
+    public long getDayCount(){
+        return ChronoUnit.DAYS.between(incLo, excHi);
+    }
+
+    public long getYearCount(){
+        return ChronoUnit.YEARS.between(incLo, excHi);
+    }
+
     public boolean isIncluding(LocalDate ld){
         return !ld.isBefore(incLo) && ld.isBefore(excHi);
     }
 
     public boolean isOverlapping(final LocalDateRange range){
         return range.excHi.isAfter(incLo) && range.incLo.isBefore(excHi);
+    }
+
+    public boolean isEmpty(){
+        return incLo.equals(excHi);
     }
 
     @Override
@@ -37,4 +54,7 @@ public class LocalDateRange {
         return new LocalDateRange(LocalDate.of(loYear, loMonth, loDay), LocalDate.of(hiYear, hiMonth, hiDay));
     }
 
+    public static LocalDateRange on(int year, int month, int day){
+        return new LocalDateRange(LocalDate.of(year, month, day));
+    }
 }

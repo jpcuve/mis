@@ -13,15 +13,15 @@ public class ScheduleTest {
     @Before
     public void init(){
         this.eur = new Schedule();
-        eur.add(Schedule.full(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 10), Position.of("EUR", 36)));
-        eur.add(Schedule.full(LocalDate.of(2018, 1, 3), LocalDate.of(2018, 1, 15), Position.of("EUR", 24)));
+        eur.add(Schedule.full(LocalDateRange.of(2018, 1, 1,2018, 1, 10), Position.of("EUR", 36)));
+        eur.add(Schedule.full(LocalDateRange.of(2018, 1, 3,2018, 1, 15), Position.of("EUR", 24)));
         this.usd = new Schedule();
-        usd.add(Schedule.full(LocalDate.of(2018,  1, 5), LocalDate.of(2018, 1, 10), Position.of("USD", 25)));
+        usd.add(Schedule.full(LocalDateRange.of(2018,  1, 5,2018, 1, 10), Position.of("USD", 25)));
     }
 
     @Test
     public void testAccumulationTo(){
-        eur.add(Schedule.full(LocalDate.of(2018, 1, 10), LocalDate.of(2018, 1, 15), Position.of("EUR", 5)));
+        eur.add(Schedule.full(LocalDateRange.of(2018, 1, 10, 2018, 1, 15), Position.of("EUR", 5)));
         System.out.println(2 + ": " + eur.accumulatedTo(LocalDate.of(2018, 1, 2)));
         for (int i = 1; i < 32; i++){
             LocalDate of = LocalDate.of(2018, 1, i);
@@ -47,7 +47,7 @@ public class ScheduleTest {
 
     @Test
     public void testSplit(){
-        final Schedule schedule = Schedule.full(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1,4), Position.of("EUR", 10));
+        final Schedule schedule = Schedule.full(LocalDateRange.of(2018, 1, 1,2018, 1,4), Position.of("EUR", 10));
         for (int i = 1; i < 32; i++) {
             LocalDate of = LocalDate.of(2018, 1, i);
             System.out.println(of + ": " + schedule.accumulatedTo(of));
@@ -69,9 +69,9 @@ public class ScheduleTest {
     @Test
     public void testYearly(){
         final LocalDate to = LocalDate.of(2019, 1, 1);
-        final Schedule schedule1 = Schedule.full(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 11), Position.of("EUR", 10));
+        final Schedule schedule1 = Schedule.full(LocalDateRange.of(2018, 1, 1, 2018, 1, 11), Position.of("EUR", 10));
         System.out.println(schedule1.accumulatedTo(to));
-        final Schedule schedule2 = Schedule.yearly(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 11), Position.of("EUR", 365));
+        final Schedule schedule2 = Schedule.yearly(LocalDateRange.of(2018, 1, 1, 2018, 1, 11), Position.of("EUR", 365));
         System.out.println(schedule2.accumulatedTo(to));
         Assert.assertTrue(schedule1.accumulatedTo(to).equals(schedule2.accumulatedTo(to)));
     }

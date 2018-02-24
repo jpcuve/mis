@@ -26,6 +26,12 @@ public class LocalDateRangeTest {
         Assert.assertTrue(range.isOverlapping(LocalDateRange.of(2018, 2, 15, 2018, 2, 20)));
         Assert.assertFalse(range.isOverlapping(LocalDateRange.of(2018, 2, 18, 2018, 2, 20)));
         Assert.assertFalse(range.isOverlapping(LocalDateRange.of(2018, 2, 19, 2018, 2, 20)));
+    }
+
+    @Test
+    public void testDayCount(){
+        final LocalDateRange range = LocalDateRange.of(2018, 2, 15, 2018, 2, 18);
+        Assert.assertEquals(3L, range.getDayCount());
 
     }
 }

@@ -1,5 +1,6 @@
 package com.darts.mis.model;
 
+import com.darts.mis.LocalDateRange;
 import com.darts.mis.Position;
 import com.darts.mis.Schedule;
 import com.darts.mis.domain.Domain;
@@ -99,11 +100,12 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
             to the end date of 'last'.
              */
             if ((subscriptionEdit.getOperation() == REM || subscriptionEdit.getOperation() == UPG) && last != null && subscriptionEdit.getFrom().isBefore(last.getTo())){
+                final LocalDateRange range = new LocalDateRange(from, last.getTo());
                 final Position amount = Position.of(last.getCurrency(), last.getPrice()).negate();
                 if (last.isYearlyPrice()){
-                    schedule.add(Schedule.yearly(from, last.getTo(), amount));
+                    schedule.add(Schedule.yearly(range, amount));
                 } else {
-                    schedule.add(Schedule.full(from, last.getTo(), amount));
+                    schedule.add(Schedule.full(range, amount));
                 }
             }
 
@@ -116,10 +118,11 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
                         to = from.plusDays(1); // example: subscription id 19818. 5 of them in the database as of 2018/02/12
                     }
                     final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getPrice());
+                    final LocalDateRange range = new LocalDateRange(from, to);
                     if (subscriptionEdit.isYearlyPrice()){
-                        schedule.add(Schedule.yearly(from, to, amount));
+                        schedule.add(Schedule.yearly(range, amount));
                     } else {
-                        schedule.add(Schedule.full(from, to, amount));
+                        schedule.add(Schedule.full(range, amount));
                     }
                 }
             }
@@ -131,10 +134,8 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
                 final Position amount = Position.of(subscriptionEdit.getCurrency(), subscriptionEdit.getAdjustment());
                 final LocalDate inc = subscriptionEdit.getAdjustmentApplication() == 2 ? to.plusDays(-1) : from;
                 final LocalDate exc = subscriptionEdit.getAdjustmentApplication() == 1 ? from.plusDays(1) : to;
-                schedule.add(Schedule.full(
-                        inc,
-                        exc.equals(inc) ? exc.plusDays(1) : exc,
-                        amount));
+                final LocalDateRange range = new LocalDateRange(inc, exc.equals(inc) ? exc.plusDays(1) : exc);
+                schedule.add(Schedule.full(range, amount));
             }
 
             last = subscriptionEdit;

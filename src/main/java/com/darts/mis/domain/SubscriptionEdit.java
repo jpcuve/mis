@@ -1,5 +1,7 @@
 package com.darts.mis.domain;
 
+import com.darts.mis.LocalDateRange;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,10 +56,14 @@ public class SubscriptionEdit {
             inverseJoinColumns = @JoinColumn(name = "history_query_fk", referencedColumnName = "id")
     )
     private Set<HistoryQuery> historyQueries;
-
     @Transient
-    public BigDecimal getInterval(){
-        return new BigDecimal(DAYS.between(from, to));
+    private LocalDateRange range;
+
+    public LocalDateRange getRange() {
+        if (range == null){
+            range = new LocalDateRange(from, to);
+        }
+        return range;
     }
 
     public Long getId() {
