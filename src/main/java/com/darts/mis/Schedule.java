@@ -84,7 +84,6 @@ public class Schedule extends TreeMap<LocalDate, Position> {
         return accumulatedTo(exc).subtract(accumulatedTo(inc));
     }
 
-
     public static Schedule full(LocalDate inc, LocalDate exc, Position p){
         return new Schedule(inc, exc, p);
     }
