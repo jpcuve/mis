@@ -43,7 +43,7 @@ public class ApiController {
 
     @GetMapping("/average-rates/{ld1}/{ld2}")
     public Position rate(@PathVariable("ld1") final String incAsString, @PathVariable("ld2") final String excAsString){
-        return forexModel.getAverageRate(LocalDate.parse(incAsString), LocalDate.parse(excAsString));
+        return forexModel.getAverageRate(new LocalDateRange(LocalDate.parse(incAsString), LocalDate.parse(excAsString)));
     }
 
     @GetMapping("/check-subscriptions")

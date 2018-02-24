@@ -130,7 +130,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
                     .stream()
                     .collect(Collectors.toMap(
                             Function.identity(),
-                            year -> forexModel.getAverageRate(LocalDate.of(year, 1, 1), LocalDate.of(year + 1, 1, 1)))
+                            year -> forexModel.getAverageRate(LocalDateRange.of(year, 1, 1, year + 1, 1, 1)))
                     );
             final Row titleRow = sheet.createRow(FIRST_DATA_ROW - 1);
             // TODO average rate over year

@@ -1,5 +1,6 @@
 package com.darts.mis.model;
 
+import com.darts.mis.LocalDateRange;
 import com.darts.mis.Position;
 import com.darts.mis.util.LocalDateDeserializer;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -74,15 +75,14 @@ public class ForexModel {
         return p;
     }
 
-    public Position getAverageRate(LocalDate inc, LocalDate exc) {
-        if (!exc.isAfter(inc)) throw new IllegalArgumentException();
+    public Position getAverageRate(LocalDateRange range) {
         Map.Entry<LocalDate, Position> lastEntry = null;
         BigDecimal totalDays = BigDecimal.ZERO;
         Position position = Position.ZERO;
         for (final Map.Entry<LocalDate, Position> entry : rates.entrySet()) {
             if (lastEntry != null) {
-                LocalDate from = inc.isAfter(lastEntry.getKey()) ? inc : lastEntry.getKey();
-                LocalDate to = exc.isAfter(entry.getKey()) ? entry.getKey() : exc;
+                LocalDate from = range.getFrom().isAfter(lastEntry.getKey()) ? range.getFrom() : lastEntry.getKey();
+                LocalDate to = range.getTo().isAfter(entry.getKey()) ? entry.getKey() : range.getTo();
 //                LOGGER.debug("From: {}, to: {}", from, to);
                 if (to.isAfter(from)) {
                     BigDecimal interval = new BigDecimal(ChronoUnit.DAYS.between(from, to));
