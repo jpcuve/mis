@@ -81,6 +81,7 @@ public class Position extends HashMap<String, BigDecimal> {
     public static Position of(String iso1, BigDecimal amount1, String iso2, BigDecimal amount2, String iso3, BigDecimal amount3){
         return new Position().putAmount(iso1, amount1).putAmount(iso2, amount2).putAmount(iso3, amount3);
     }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof Position){

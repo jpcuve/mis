@@ -79,8 +79,8 @@ public class Schedule extends TreeMap<LocalDate, Position> {
         return ret;
     }
 
-    public Position accumulated(LocalDate inc, LocalDate exc){
-        return accumulatedTo(exc).subtract(accumulatedTo(inc));
+    public Position accumulated(LocalDateRange range){
+        return accumulatedTo(range.getTo()).subtract(accumulatedTo(range.getFrom()));
     }
 
     public static Schedule full(LocalDateRange range, Position p){
@@ -89,17 +89,19 @@ public class Schedule extends TreeMap<LocalDate, Position> {
 
     public static Schedule yearly(LocalDateRange range, Position p){
         final Schedule schedule = new Schedule();
+        LocalDateRange remaining = range;
         long years = range.getYearCount();
         if (years > 0){
-            schedule.mergePosition(new LocalDateRange(range.getFrom(), range.getFrom().plusYears(years)), p.scalar(new BigDecimal(years)));
+            final LocalDate intermediate = range.getFrom().plusYears(years);
+            schedule.mergePosition(new LocalDateRange(range.getFrom(), intermediate), p.scalar(new BigDecimal(years)));
+            remaining = new LocalDateRange(intermediate, range.getTo());
         }
-        final LocalDateRange remaining = new LocalDateRange(range.getFrom().plusYears(years), range.getTo());
-        long remainingDays = remaining.getDayCount();
-        if (remainingDays > 0){
-            final BigDecimal divisor = new BigDecimal(remainingDays);
+        if (!remaining.isEmpty()){
+            final long yearDayCount = new LocalDateRange(remaining.getFrom(), remaining.getFrom().plusYears(1)).getDayCount();
+            final BigDecimal divisor = new BigDecimal(yearDayCount);
             final Position daily = p.inverseScalar(divisor);
-            schedule.mergeFlow(remaining.getFrom(), daily);
-            schedule.mergeFlow(remaining.getTo(), daily.negate());
+            schedule.mergeFlow(range.getFrom(), daily);
+            schedule.mergeFlow(range.getTo(), daily.negate());
         }
         return schedule;
     }

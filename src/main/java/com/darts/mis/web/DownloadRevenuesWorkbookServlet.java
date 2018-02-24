@@ -1,5 +1,6 @@
 package com.darts.mis.web;
 
+import com.darts.mis.LocalDateRange;
 import com.darts.mis.Position;
 import com.darts.mis.Schedule;
 import com.darts.mis.domain.AccountStatus;
@@ -168,10 +169,9 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
             final Map<Domain, Schedule> revenues = accountItem.getRevenues();
             int colNum = CURRENCY_SHEET_TITLES.length;
             for (Integer year: years){
-                final LocalDate inc = LocalDate.of(year, 1, 1);
-                final LocalDate exc = inc.plusYears(1);
+                final LocalDateRange range = LocalDateRange.of(year, 1, 1, year + 1, 1, 1);
                 for (final Domain domain: Domain.values()){
-                    final Position position = revenues.getOrDefault(domain, Schedule.EMPTY).accumulated(inc, exc);
+                    final Position position = revenues.getOrDefault(domain, Schedule.EMPTY).accumulated(range);
                     for (String currency: currencies){
                         final HSSFSheet currencySheet = sheets.get(currency);
                         final Row row = currencySheet.getRow(rowNum);

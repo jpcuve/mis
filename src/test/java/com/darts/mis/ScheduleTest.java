@@ -32,7 +32,7 @@ public class ScheduleTest {
 
     @Test
     public void testAccumulation(){
-        System.out.println(eur.accumulated(LocalDate.of(2018, 1, 7), LocalDate.of(2018, 1, 9)));
+        System.out.println(eur.accumulated(LocalDateRange.of(2018, 1, 7, 2018, 1, 9)));
     }
 
     @Test
@@ -40,7 +40,7 @@ public class ScheduleTest {
         final Schedule total = new Schedule();
         total.add(eur);
         total.add(usd);
-        Position accumulated = total.accumulated(LocalDate.of(2018, 1, 4), LocalDate.of(2018, 1, 9));
+        Position accumulated = total.accumulated(LocalDateRange.of(2018, 1, 4, 2018, 1, 9));
         System.out.println(accumulated);
         Assert.assertEquals(Position.of("USD", 20, "EUR", 30), accumulated);
     }
