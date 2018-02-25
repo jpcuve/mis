@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 public class RevenueModel {
     public static final MathContext MATH_CONTEXT = new MathContext(2, RoundingMode.FLOOR);
     private final DataFacade facade;
-    private final Set<String> currencies = new HashSet<>();
-    private final Set<Integer> years = new HashSet<>();
+    private List<String> currencies;
+    private List<Integer> years;
     private Map<Long, Map<Domain, Long>> queryCounts;
     private List<AccountItem> accountItems;
     @Value("${app.accountIds}")
@@ -36,15 +36,20 @@ public class RevenueModel {
         final List<Account> accounts = accountIds == null || accountIds.length() == 0 ?
                 facade.findAllAccounts() :
                 facade.findAccountByIds(Arrays.stream(accountIds.split(",")).map(Long::parseLong).collect(Collectors.toList()));
+        final Set<String> cs = new TreeSet<>();
+        final Set<Integer> ys = new TreeSet<>();
         accounts
                 .stream()
                 .flatMap(a -> a.getSubscriptions().stream())
                 .flatMap(s -> s.getEdits().stream())
                 .forEach(subscriptionEdit -> {
-                    currencies.add(subscriptionEdit.getCurrency());
-                    years.add(subscriptionEdit.getFrom().getYear());
-                    years.add(subscriptionEdit.getTo().getYear());
+                    cs.add(subscriptionEdit.getCurrency());
+                    ys.add(subscriptionEdit.getFrom().getYear());
+                    ys.add(subscriptionEdit.getTo().getYear());
                 });
+        this.currencies = new ArrayList<>(cs);
+        this.years = new ArrayList<>(ys);
+        years.sort(Comparator.reverseOrder());
         this.queryCounts = facade.countSubscriptionQueriesByDomain();
         this.accountItems = accounts
                 .stream()
@@ -58,14 +63,13 @@ public class RevenueModel {
                     return new AccountItem(a, subscriptionItems);
                 })
                 .collect(Collectors.toList());
-
     }
 
-    public Set<String> getCurrencies() {
+    public List<String> getCurrencies() {
         return currencies;
     }
 
-    public Set<Integer> getYears() {
+    public List<Integer> getYears() {
         return years;
     }
 

@@ -6,25 +6,22 @@ import com.darts.mis.Schedule;
 import com.darts.mis.domain.Domain;
 import com.darts.mis.model.AccountItem;
 import com.darts.mis.model.RevenueModel;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Year;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 public class CurrencySheetBuilder implements SheetBuilder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CurrencySheetBuilder.class);
     private final String[] titles = { "Id", "Name" };
     private final RevenueModel revenueModel;
 
@@ -34,16 +31,27 @@ public class CurrencySheetBuilder implements SheetBuilder {
     }
 
     @Override
-    public void addSheets(HSSFWorkbook workbook) {
+    public void addSheets(HSSFWorkbook workbook, int year) {
+        final LocalDateRange range = LocalDateRange.of(year, 1, 1, year + 1, 1, 1);
         revenueModel.getCurrencies().forEach(iso -> {
             final Sheet sheet = workbook.createSheet(String.format("(%s)", iso));
             final AtomicInteger row = new AtomicInteger();
             final Row titleRow = sheet.createRow(row.getAndIncrement());
             final AtomicInteger titleCol = new AtomicInteger();
             Arrays.stream(titles).forEach(title -> titleRow.createCell(titleCol.getAndIncrement()).setCellValue(title));
-            for (final Integer year: revenueModel.getYears()) {
-                for (final Domain domain : Domain.values()) {
-                    titleRow.createCell(titleCol.getAndIncrement()).setCellValue(String.format("%s %s", year, domain));
+            for (final Domain domain : Domain.values()) {
+                titleRow.createCell(titleCol.getAndIncrement()).setCellValue(String.format("%s %s", year, domain));
+            }
+            for (final AccountItem accountItem: revenueModel.getAccountItems()) {
+                LOGGER.debug("Account: {} {}", accountItem.getAccount().getId(), accountItem.getAccount().getName());
+                final Row accountRow = sheet.createRow(row.getAndIncrement());
+                final AtomicInteger accountCol = new AtomicInteger();
+                accountRow.createCell(accountCol.getAndIncrement()).setCellValue(accountItem.getAccount().getId());
+                accountRow.createCell(accountCol.getAndIncrement()).setCellValue(accountItem.getAccount().getName());
+                final Map<Domain, Schedule> revenues = accountItem.getRevenues();
+                for (final Domain domain: Domain.values()){
+                    final Position position = revenues.getOrDefault(domain, Schedule.EMPTY).accumulated(range);
+                    accountRow.createCell(accountCol.getAndIncrement()).setCellValue(position.getOrDefault(iso, BigDecimal.ZERO).doubleValue());
                 }
             }
         });

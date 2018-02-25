@@ -28,8 +28,7 @@ public class SubscriptionSheetBuilder implements SheetBuilder {
     }
 
     @Override
-    public void addSheets(HSSFWorkbook workbook) {
-        int year = Year.now().getValue();
+    public void addSheets(HSSFWorkbook workbook, int year) {
         final LocalDateRange range = LocalDateRange.of(year - 1, 1, 1, year, 1, 1);
         final AtomicInteger row = new AtomicInteger();
         final Sheet sheet = workbook.createSheet("Subscriptions");

@@ -28,7 +28,7 @@ public class AccountSheetBuilder implements SheetBuilder {
     }
 
     @Override
-    public void addSheets(HSSFWorkbook workbook) {
+    public void addSheets(HSSFWorkbook workbook, int year) {
         final LocalDate now = LocalDate.of(Year.now().getValue(), 1, 1);
         final Sheet sheet = workbook.createSheet("Accounts");
         final AtomicInteger row = new AtomicInteger();
