@@ -1,7 +1,10 @@
-package com.darts.mis.model;
+package com.darts.mis.model.sheet;
 
 import com.darts.mis.Schedule;
 import com.darts.mis.domain.Domain;
+import com.darts.mis.model.AccountItem;
+import com.darts.mis.model.RevenueModel;
+import com.darts.mis.model.sheet.SheetBuilder;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -27,8 +30,8 @@ public class AccountSheetBuilder implements SheetBuilder {
     @Override
     public void addSheets(HSSFWorkbook workbook) {
         final LocalDate now = LocalDate.of(Year.now().getValue(), 1, 1);
-        final AtomicInteger row = new AtomicInteger();
         final Sheet sheet = workbook.createSheet("Accounts");
+        final AtomicInteger row = new AtomicInteger();
         sheet.createRow(row.getAndIncrement()).createCell(0).setCellValue("Total revenues ever, accumulated to: " + now);
         final Row titleRow = sheet.createRow(row.getAndIncrement());
         final AtomicInteger titleCol = new AtomicInteger();

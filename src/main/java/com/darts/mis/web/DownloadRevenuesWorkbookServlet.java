@@ -5,8 +5,10 @@ import com.darts.mis.Position;
 import com.darts.mis.Schedule;
 import com.darts.mis.domain.AccountStatus;
 import com.darts.mis.domain.Domain;
-import com.darts.mis.domain.SubscriptionEdit;
 import com.darts.mis.model.*;
+import com.darts.mis.model.sheet.AccountSheetBuilder;
+import com.darts.mis.model.sheet.CurrencySheetBuilder;
+import com.darts.mis.model.sheet.SubscriptionSheetBuilder;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -41,18 +43,21 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
     private List<AccountItem> accountItems;
     private final AccountSheetBuilder accountSheetBuilder;
     private final SubscriptionSheetBuilder subscriptionSheetBuilder;
+    private final CurrencySheetBuilder currencySheetBuilder;
 
     @Autowired
     public DownloadRevenuesWorkbookServlet(
             RevenueModel revenueModel,
             ForexModel forexModel,
             AccountSheetBuilder accountSheetBuilder,
-            SubscriptionSheetBuilder subscriptionSheetBuilder
+            SubscriptionSheetBuilder subscriptionSheetBuilder,
+            CurrencySheetBuilder currencySheetBuilder
     ){
         this.revenueModel = revenueModel;
         this.forexModel = forexModel;
         this.accountSheetBuilder = accountSheetBuilder;
         this.subscriptionSheetBuilder = subscriptionSheetBuilder;
+        this.currencySheetBuilder = currencySheetBuilder;
     }
 
     @PostConstruct
@@ -191,6 +196,7 @@ public class DownloadRevenuesWorkbookServlet extends HttpServlet {
         try(final HSSFWorkbook workbook = new HSSFWorkbook()){
             accountSheetBuilder.addSheets(workbook);
             subscriptionSheetBuilder.addSheets(workbook);
+            currencySheetBuilder.addSheets(workbook);
             fillSummarySheet(workbook.createSheet("Summary"));
             fillTotalSheet(workbook.createSheet("Total"));
             fillCurrencySheets(currencies
