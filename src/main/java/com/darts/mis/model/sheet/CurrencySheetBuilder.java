@@ -5,6 +5,7 @@ import com.darts.mis.Position;
 import com.darts.mis.Schedule;
 import com.darts.mis.domain.Domain;
 import com.darts.mis.model.AccountItem;
+import com.darts.mis.model.ForexModel;
 import com.darts.mis.model.RevenueModel;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,23 +27,31 @@ public class CurrencySheetBuilder implements SheetBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(CurrencySheetBuilder.class);
     private final String[] titles = { "Id", "Name" };
     private final RevenueModel revenueModel;
+    private final ForexModel forexModel;
 
     @Autowired
-    public CurrencySheetBuilder(RevenueModel revenueModel) {
+    public CurrencySheetBuilder(RevenueModel revenueModel, ForexModel forexModel) {
         this.revenueModel = revenueModel;
+        this.forexModel = forexModel;
     }
 
     @Override
     public void addSheets(HSSFWorkbook workbook, int year) {
         final LocalDateRange range = LocalDateRange.of(year, 1, 1, year + 1, 1, 1);
+        final Position rates = forexModel.getAverageRate(range);
         revenueModel.getCurrencies().forEach(iso -> {
-            final Sheet sheet = workbook.createSheet(String.format("(%s)", iso));
+            final Sheet sheet = workbook.createSheet(String.format("%s", iso));
+            final BigDecimal rate = rates.getOrDefault(iso, BigDecimal.ZERO);
             final AtomicInteger row = new AtomicInteger();
+            final Row infoRow = sheet.createRow(row.getAndIncrement());
+            final AtomicInteger infoCol = new AtomicInteger();
+            infoRow.createCell(infoCol.getAndIncrement()).setCellValue("Revenues in " + iso + " for: " + range + "; average exchange rate: " + rate);
             final Row titleRow = sheet.createRow(row.getAndIncrement());
             final AtomicInteger titleCol = new AtomicInteger();
             Arrays.stream(titles).forEach(title -> titleRow.createCell(titleCol.getAndIncrement()).setCellValue(title));
             for (final Domain domain : Domain.values()) {
-                titleRow.createCell(titleCol.getAndIncrement()).setCellValue(String.format("%s %s", year, domain));
+                titleRow.createCell(titleCol.getAndIncrement()).setCellValue(String.format("%s (%s)", domain, iso));
+                titleRow.createCell(titleCol.getAndIncrement()).setCellValue(String.format("%s (EUR)", domain));
             }
             for (final AccountItem accountItem: revenueModel.getAccountItems()) {
                 LOGGER.debug("Account: {} {}", accountItem.getAccount().getId(), accountItem.getAccount().getName());
@@ -51,7 +62,10 @@ public class CurrencySheetBuilder implements SheetBuilder {
                 final Map<Domain, Schedule> revenues = accountItem.getRevenues();
                 for (final Domain domain: Domain.values()){
                     final Position position = revenues.getOrDefault(domain, Schedule.EMPTY).accumulated(range);
-                    accountRow.createCell(accountCol.getAndIncrement()).setCellValue(position.getOrDefault(iso, BigDecimal.ZERO).doubleValue());
+                    final BigDecimal amountInIso = position.getOrDefault(iso, BigDecimal.ZERO);
+                    accountRow.createCell(accountCol.getAndIncrement()).setCellValue(amountInIso.doubleValue());
+                    final BigDecimal amountInEur = amountInIso.divide(rate, MathContext.DECIMAL64);
+                    accountRow.createCell(accountCol.getAndIncrement()).setCellValue(amountInEur.doubleValue());
                 }
             }
         });

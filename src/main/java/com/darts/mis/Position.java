@@ -2,13 +2,12 @@ package com.darts.mis;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Position extends HashMap<String, BigDecimal> {
     public static final Position ZERO = new Position();
-    public static final MathContext MATH_CONTEXT = new MathContext(2, RoundingMode.FLOOR);
 
     public Position() {
     }
@@ -34,6 +33,14 @@ public class Position extends HashMap<String, BigDecimal> {
         return normalize().isEmpty();
     }
 
+    public BigDecimal dot(Position that){
+        BigDecimal bd = BigDecimal.ZERO;
+        for (Map.Entry<String, BigDecimal> e: entrySet()){
+            bd = bd.add(e.getValue().multiply(that.getOrDefault(e.getKey(), BigDecimal.ZERO)));
+        }
+        return bd;
+    }
+
     public Position add(Position that){
         return entrySet().stream().collect(() -> new Position(that), (p, e) -> p.put(e.getKey(), e.getValue().add(p.getOrDefault(e.getKey(), BigDecimal.ZERO))), Position::add);
     }
@@ -51,11 +58,15 @@ public class Position extends HashMap<String, BigDecimal> {
     }
 
     public Position inverseScalar(BigDecimal bd){
-        return inverseScalar(bd, MATH_CONTEXT);
+        return inverseScalar(bd, MathContext.DECIMAL128);
     }
 
     public Position negate(){
         return entrySet().stream().collect(Position::new, (p, e) -> p.put(e.getKey(), e.getValue().negate()), Position::add);
+    }
+
+    public Position inverse(MathContext mathContext){
+        return entrySet().stream().filter(e -> e.getValue().signum() != 0).collect(Position::new, (p, e) -> p.put(e.getKey(), BigDecimal.ONE.divide(e.getValue(), mathContext)), Position::add);
     }
 
     public static Position of(String iso, double amount) {
