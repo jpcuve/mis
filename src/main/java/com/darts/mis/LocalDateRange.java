@@ -47,7 +47,7 @@ public class LocalDateRange {
 
     @Override
     public String toString() {
-        return String.format("[%s-%s)", incLo, excHi);
+        return String.format("[%s..%s)", incLo, excHi);
     }
 
     public static LocalDateRange of(int loYear, int loMonth, int loDay, int hiYear, int hiMonth, int hiDay){
