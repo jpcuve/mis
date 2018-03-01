@@ -9,6 +9,7 @@ import com.darts.mis.domain.SubscriptionEdit;
 import com.darts.mis.domain.SubscriptionEditOperation;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
@@ -76,7 +77,7 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
         BigDecimal accumulator = BigDecimal.ZERO;
         for (int i = 0; i < domains.size() - 1; i++){
             final Domain domain = domains.get(i);
-            final BigDecimal domainProportion = new BigDecimal((double) queryCounts.get(domain) / total, RevenueModel.MATH_CONTEXT);
+            final BigDecimal domainProportion = new BigDecimal((double) queryCounts.get(domain) / total, MathContext.DECIMAL64);
             factors.put(domain, domainProportion);
             accumulator = accumulator.add(domainProportion);
         }

@@ -34,7 +34,7 @@ public class AccountSheetBuilder implements SheetBuilder {
     @Override
     public void addSheets(HSSFWorkbook workbook, int year) {
         final LocalDateRange range = LocalDateRange.of(year, 1, 1, year + 1, 1, 1);
-        final Position rates = forexModel.getAverageRate(range).inverse(MathContext.DECIMAL128);
+        final Position rates = forexModel.getAverageRate(range).inverse(MathContext.DECIMAL64);
         final Sheet sheet = workbook.createSheet("Accounts");
         final AtomicInteger row = new AtomicInteger();
         sheet.createRow(row.getAndIncrement()).createCell(0).setCellValue("Total revenues in EUR for: " + range);
@@ -42,6 +42,7 @@ public class AccountSheetBuilder implements SheetBuilder {
         final AtomicInteger titleCol = new AtomicInteger();
         Arrays.stream(titles).forEach(title -> titleRow.createCell(titleCol.getAndIncrement()).setCellValue(title));
         Arrays.stream(Domain.values()).forEach(domain -> titleRow.createCell(titleCol.getAndIncrement()).setCellValue(domain.toString()));
+        titleRow.createCell(titleCol.getAndIncrement()).setCellValue("Total");
         for (final AccountItem accountItem: revenueModel.getAccountItems()) {
             final Row accountRow = sheet.createRow(row.getAndIncrement());
             final AtomicInteger accountCol = new AtomicInteger();
@@ -51,12 +52,15 @@ public class AccountSheetBuilder implements SheetBuilder {
             accountRow.createCell(accountCol.getAndIncrement()).setCellValue(accountItem.getAccount().getUsers().size());
             accountRow.createCell(accountCol.getAndIncrement()).setCellValue(accountItem.getAccount().getStatus().toString());
             final Map<Domain, Schedule> revenues = accountItem.getRevenues();
-            Arrays.stream(Domain.values()).forEach(domain -> {
+            BigDecimal totalInEur = BigDecimal.ZERO;
+            for (Domain domain: Domain.values()) {
                 final Schedule domainRevenues = revenues.getOrDefault(domain, Schedule.EMPTY);
                 final Position accumulated = domainRevenues.accumulated(range);
                 final BigDecimal amountInEur = accumulated.dot(rates);
                 accountRow.createCell(accountCol.getAndIncrement()).setCellValue(amountInEur.doubleValue());
-            });
+                totalInEur = totalInEur.add(amountInEur);
+            }
+            accountRow.createCell(accountCol.getAndIncrement()).setCellValue(totalInEur.doubleValue());
         }
 
     }

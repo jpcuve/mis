@@ -8,16 +8,14 @@ import com.darts.mis.model.AccountItem;
 import com.darts.mis.model.ForexModel;
 import com.darts.mis.model.RevenueModel;
 import com.darts.mis.model.SubscriptionItem;
-import com.darts.mis.model.sheet.SheetBuilder;
+import com.darts.mis.util.Conversions;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.time.Year;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class SubscriptionSheetBuilder implements SheetBuilder {
-    private final String[] titles = { "Account id", "Account name", "Subscription id", "Last from", "Last to", "Cancelled" };
+    private final static String[] TITLES = { "Account id", "Account name", "Subscription id", "Last from", "Last to", "Cancelled" };
     private final RevenueModel revenueModel;
     private final ForexModel forexModel;
 
@@ -38,16 +36,19 @@ public class SubscriptionSheetBuilder implements SheetBuilder {
     @Override
     public void addSheets(HSSFWorkbook workbook, int year) {
         final LocalDateRange range = LocalDateRange.of(year, 1, 1, year + 1, 1, 1);
-        final Position rates = forexModel.getAverageRate(range).inverse(MathContext.DECIMAL128);
+        final CellStyle dateCellStyle = workbook.createCellStyle();
+        CreationHelper createHelper = workbook.getCreationHelper();
+        dateCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/mm/yyyy"));
+        final Position rates = forexModel.getAverageRate(range).inverse(MathContext.DECIMAL64);
         final AtomicInteger row = new AtomicInteger();
         final Sheet sheet = workbook.createSheet("Subscriptions");
 
         sheet.createRow(row.getAndIncrement()).createCell(0).setCellValue("Subscription revenues in EUR for: " + range);
         final Row titleRow = sheet.createRow(row.getAndIncrement());
         final AtomicInteger titleCol = new AtomicInteger();
-        Arrays.stream(titles).forEach(title -> titleRow.createCell(titleCol.getAndIncrement()).setCellValue(title));
+        Arrays.stream(TITLES).forEach(title -> titleRow.createCell(titleCol.getAndIncrement()).setCellValue(title));
         Arrays.stream(Domain.values()).forEach(domain -> {
-            titleRow.createCell(titleCol.getAndIncrement()).setCellValue(String.format("%s Active", domain));
+//            titleRow.createCell(titleCol.getAndIncrement()).setCellValue(String.format("%s Active", domain));
             titleRow.createCell(titleCol.getAndIncrement()).setCellValue(String.format("%s Total", domain));
             titleRow.createCell(titleCol.getAndIncrement()).setCellValue(String.format("%s (EUR)", domain));
         });
@@ -60,13 +61,17 @@ public class SubscriptionSheetBuilder implements SheetBuilder {
                         subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getId());
                         subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getName());
                         subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.getSubscription().getId());
-                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(se.getFrom().toString());
-                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(se.getTo().toString());
+                        Cell fromCell = subscriptionRow.createCell(subscriptionCol.getAndIncrement());
+                        fromCell.setCellValue(Conversions.localDateToCalendar(se.getFrom()));
+                        fromCell.setCellStyle(dateCellStyle);
+                        Cell toCell = subscriptionRow.createCell(subscriptionCol.getAndIncrement());
+                        toCell.setCellValue(Conversions.localDateToCalendar(se.getTo()));
+                        toCell.setCellStyle(dateCellStyle);
                         subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.isCancelled());
                         final Set<Domain> subscriptionDomains = subscriptionItem.getSubscription().getDomains();
                         final Map<Domain, Schedule> subscriptionRevenues = subscriptionItem.getRevenues();
                         Arrays.stream(Domain.values()).forEach(domain -> {
-                            subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionDomains.contains(domain));
+//                            subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionDomains.contains(domain));
                             final Position accumulated = subscriptionRevenues.getOrDefault(domain, Schedule.EMPTY).accumulated(range);
                             subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accumulated.toString());
                             final BigDecimal amountInEur = accumulated.dot(rates);

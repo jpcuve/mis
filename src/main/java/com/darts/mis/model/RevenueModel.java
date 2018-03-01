@@ -17,13 +17,11 @@ import java.util.stream.Collectors;
 @Component
 @Scope("singleton")
 public class RevenueModel {
-    public static final MathContext MATH_CONTEXT = new MathContext(2, RoundingMode.FLOOR);
     private final DataFacade facade;
     private List<String> currencies;
     private List<Integer> years;
-    private Map<Long, Map<Domain, Long>> queryCounts;
     private List<AccountItem> accountItems;
-    @Value("${app.accountIds}")
+    @Value("${app.account-ids}")
     private String accountIds;
 
     @Autowired
@@ -50,7 +48,7 @@ public class RevenueModel {
         this.currencies = new ArrayList<>(cs);
         this.years = new ArrayList<>(ys);
         years.sort(Comparator.reverseOrder());
-        this.queryCounts = facade.countSubscriptionQueriesByDomain();
+        final Map<Long, Map<Domain, Long>> queryCounts = facade.countSubscriptionQueriesByDomain();
         this.accountItems = accounts
                 .stream()
                 .sorted(Comparator.comparing(Account::getName))
@@ -71,10 +69,6 @@ public class RevenueModel {
 
     public List<Integer> getYears() {
         return years;
-    }
-
-    public Map<Long, Map<Domain, Long>> getQueryCounts() {
-        return queryCounts;
     }
 
     public List<AccountItem> getAccountItems() {

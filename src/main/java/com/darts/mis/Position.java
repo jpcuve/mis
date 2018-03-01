@@ -58,7 +58,7 @@ public class Position extends HashMap<String, BigDecimal> {
     }
 
     public Position inverseScalar(BigDecimal bd){
-        return inverseScalar(bd, MathContext.DECIMAL128);
+        return inverseScalar(bd, MathContext.DECIMAL64);
     }
 
     public Position negate(){
