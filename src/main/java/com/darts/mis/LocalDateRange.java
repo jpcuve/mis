@@ -45,6 +45,10 @@ public class LocalDateRange {
         return incLo.equals(excHi);
     }
 
+    public LocalDateRange union(LocalDateRange range){
+        return range == null ? this : new LocalDateRange(incLo.isBefore(range.incLo) ? incLo : range.incLo, excHi.isAfter(range.excHi) ? excHi : range.excHi);
+    }
+
     @Override
     public String toString() {
         return String.format("[%s..%s)", incLo, excHi);

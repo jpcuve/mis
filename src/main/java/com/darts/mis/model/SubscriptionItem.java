@@ -3,10 +3,7 @@ package com.darts.mis.model;
 import com.darts.mis.LocalDateRange;
 import com.darts.mis.Position;
 import com.darts.mis.Schedule;
-import com.darts.mis.domain.Domain;
-import com.darts.mis.domain.Subscription;
-import com.darts.mis.domain.SubscriptionEdit;
-import com.darts.mis.domain.SubscriptionEditOperation;
+import com.darts.mis.domain.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -22,6 +19,7 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
     private final Map<Domain, Schedule> revenues;
     private final List<SubscriptionEdit> edits;
     private final Optional<SubscriptionEdit> lastRenewOrUpdate;
+    private final Optional<LocalDateRange> range;
 
     public SubscriptionItem(Subscription subscription, Map<Domain, Long> queryCounts) {
         this.subscription = subscription;
@@ -44,10 +42,14 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
                 .stream()
                 .filter(se -> se.getOperation() == SubscriptionEditOperation.REN || se.getOperation() == SubscriptionEditOperation.UPG)
                 .reduce((se1, se2) -> se2);
-    }
-
-    public List<SubscriptionEdit> getEdits() {
-        return edits;
+        LocalDateRange range = null;
+        for (final SubscriptionEdit edit: edits){
+            range = edit.getRange().union(range);
+        }
+        for (final Service service: subscription.getServices()){
+            range = service.getRange().union(range);
+        }
+        this.range = Optional.ofNullable(range);
     }
 
     public Optional<SubscriptionEdit> getLastRenewOrUpdate(){
@@ -64,6 +66,10 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
 
     public boolean isCancelled(){
         return !edits.isEmpty() && edits.get(edits.size() - 1).getOperation() == SubscriptionEditOperation.REM;
+    }
+
+    public Optional<LocalDateRange> getRange() {
+        return range;
     }
 
     private static Map<Domain, BigDecimal> computeSplit(Map<Domain, Long> queryCounts){

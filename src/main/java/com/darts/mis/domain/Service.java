@@ -1,5 +1,7 @@
 package com.darts.mis.domain;
 
+import com.darts.mis.LocalDateRange;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,6 +27,16 @@ public class Service {
     @ManyToOne
     @JoinColumn(name = "subscription_fk")
     private Subscription subscription;
+
+    @Transient
+    private LocalDateRange range;
+
+    public LocalDateRange getRange() {
+        if (range == null){
+            range = new LocalDateRange(when, when);
+        }
+        return range;
+    }
 
 
     public Long getId() {

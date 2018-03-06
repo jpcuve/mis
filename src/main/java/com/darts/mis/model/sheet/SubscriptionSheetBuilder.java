@@ -4,6 +4,7 @@ import com.darts.mis.LocalDateRange;
 import com.darts.mis.Position;
 import com.darts.mis.Schedule;
 import com.darts.mis.domain.Domain;
+import com.darts.mis.domain.SubscriptionEdit;
 import com.darts.mis.model.AccountItem;
 import com.darts.mis.model.ForexModel;
 import com.darts.mis.model.RevenueModel;
@@ -18,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -54,31 +56,30 @@ public class SubscriptionSheetBuilder implements SheetBuilder {
         });
         for (final AccountItem accountItem: revenueModel.getAccountItems()) {
             for (final SubscriptionItem subscriptionItem: accountItem.getSubscriptionItems()){
-                subscriptionItem.getLastRenewOrUpdate().ifPresent(se -> {
-                    if (range.isOverlapping(se.getRange())) {
-                        final Row subscriptionRow = sheet.createRow(row.getAndIncrement());
-                        final AtomicInteger subscriptionCol = new AtomicInteger();
-                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getId());
-                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getName());
-                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.getSubscription().getId());
-                        Cell fromCell = subscriptionRow.createCell(subscriptionCol.getAndIncrement());
-                        fromCell.setCellValue(Conversions.localDateToCalendar(se.getFrom()));
-                        fromCell.setCellStyle(dateCellStyle);
-                        Cell toCell = subscriptionRow.createCell(subscriptionCol.getAndIncrement());
-                        toCell.setCellValue(Conversions.localDateToCalendar(se.getTo()));
-                        toCell.setCellStyle(dateCellStyle);
-                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.isCancelled());
-                        final Set<Domain> subscriptionDomains = subscriptionItem.getSubscription().getDomains();
-                        final Map<Domain, Schedule> subscriptionRevenues = subscriptionItem.getRevenues();
-                        Arrays.stream(Domain.values()).forEach(domain -> {
+                if (subscriptionItem.getRange().isPresent() && range.isOverlapping(subscriptionItem.getRange().get())){
+                    final Row subscriptionRow = sheet.createRow(row.getAndIncrement());
+                    final AtomicInteger subscriptionCol = new AtomicInteger();
+                    subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getId());
+                    subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getName());
+                    subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.getSubscription().getId());
+                    Cell fromCell = subscriptionRow.createCell(subscriptionCol.getAndIncrement());
+                    final Optional<SubscriptionEdit> optionalLast = subscriptionItem.getLastRenewOrUpdate();
+                    fromCell.setCellValue(optionalLast.map(se -> se.getFrom().toString()).orElse(null));
+                    fromCell.setCellStyle(dateCellStyle);
+                    Cell toCell = subscriptionRow.createCell(subscriptionCol.getAndIncrement());
+                    toCell.setCellValue(optionalLast.map(se -> se.getTo().toString()).orElse(null));
+                    toCell.setCellStyle(dateCellStyle);
+                    subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionItem.isCancelled());
+                    final Set<Domain> subscriptionDomains = subscriptionItem.getSubscription().getDomains();
+                    final Map<Domain, Schedule> subscriptionRevenues = subscriptionItem.getRevenues();
+                    Arrays.stream(Domain.values()).forEach(domain -> {
 //                            subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(subscriptionDomains.contains(domain));
-                            final Position accumulated = subscriptionRevenues.getOrDefault(domain, Schedule.EMPTY).accumulated(range);
-                            subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accumulated.toString());
-                            final BigDecimal amountInEur = accumulated.dot(rates);
-                            subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(amountInEur.doubleValue());
-                        });
-                    }
-                });
+                        final Position accumulated = subscriptionRevenues.getOrDefault(domain, Schedule.EMPTY).accumulated(range);
+                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accumulated.toString());
+                        final BigDecimal amountInEur = accumulated.dot(rates);
+                        subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(amountInEur.doubleValue());
+                    });
+                }
             }
         }
     }
