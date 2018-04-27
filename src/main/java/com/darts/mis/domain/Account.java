@@ -8,8 +8,8 @@ import java.util.Set;
 @Entity
 @Table( name = "account")
 @NamedQueries({
-        @NamedQuery(name = Account.FULL_BY_IDS, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services where a.id in (:ids)"),
-        @NamedQuery(name = Account.ACCOUNT_ALL, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services"),
+        @NamedQuery(name = Account.FULL_BY_IDS, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services left join fetch a.invoices i left join fetch i.lines il where a.id in (:ids)"),
+        @NamedQuery(name = Account.ACCOUNT_ALL, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services left join fetch a.invoices i left join fetch i.lines il"),
 })
 public class Account {
     public static final String FULL_BY_IDS = "account.fullByIds";
@@ -34,6 +34,8 @@ public class Account {
     private boolean active;
     @OneToMany(mappedBy = "account")
     private Set<Subscription> subscriptions;
+    @OneToMany(mappedBy = "account")
+    private Set<Invoice> invoices;
     @OneToMany(mappedBy = "account")
     private Set<User> users;
 
@@ -91,6 +93,14 @@ public class Account {
 
     public void setSubscriptions(Set<Subscription> subscriptions) {
         this.subscriptions = subscriptions;
+    }
+
+    public Set<Invoice> getInvoices() {
+        return invoices;
+    }
+
+    public void setInvoices(Set<Invoice> invoices) {
+        this.invoices = invoices;
     }
 
     public Set<User> getUsers() {

@@ -21,6 +21,9 @@ public class InvoiceLine {
     @ManyToOne
     @JoinColumn(name = "service_fk")
     private Service service;
+    @ManyToOne
+    @JoinColumn(name = "invoice_fk")
+    private Invoice invoice;
 
     public Long getId() {
         return id;
@@ -60,5 +63,13 @@ public class InvoiceLine {
 
     public void setService(Service service) {
         this.service = service;
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
+    }
+
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
     }
 }
