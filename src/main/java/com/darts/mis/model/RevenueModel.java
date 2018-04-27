@@ -8,16 +8,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 @Scope("singleton")
 public class RevenueModel {
-    private final DataFacade facade;
     private List<String> currencies;
     private List<Integer> years;
     private List<AccountItem> accountItems;
@@ -26,11 +22,6 @@ public class RevenueModel {
 
     @Autowired
     public RevenueModel(DataFacade facade) {
-        this.facade = facade;
-    }
-
-    @PostConstruct
-    public void init(){
         final List<Account> accounts = accountIds == null || accountIds.length() == 0 ?
                 facade.findAllAccounts() :
                 facade.findAccountByIds(Arrays.stream(accountIds.split(",")).map(Long::parseLong).collect(Collectors.toList()));

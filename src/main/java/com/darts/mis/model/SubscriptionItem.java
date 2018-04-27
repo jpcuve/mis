@@ -18,8 +18,8 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
     private final Subscription subscription;
     private final Map<Domain, Schedule> revenues;
     private final List<SubscriptionEdit> edits;
-    private final Optional<SubscriptionEdit> lastRenewOrUpdate;
-    private final Optional<LocalDateRange> range;
+    private final SubscriptionEdit lastRenewOrUpdate;
+    private final LocalDateRange range;
 
     public SubscriptionItem(Subscription subscription, Map<Domain, Long> queryCounts) {
         this.subscription = subscription;
@@ -30,8 +30,8 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
         revenue.normalize();
         final Map<Domain, BigDecimal> split = computeSplit(
                 queryCounts.isEmpty() ?
-                subscription.getDomains().stream().collect(Collectors.toMap(Function.identity(), d -> 1L)) :
-                queryCounts
+                        subscription.getDomains().stream().collect(Collectors.toMap(Function.identity(), d -> 1L)) :
+                        queryCounts
         );
         this.revenues = split.keySet().stream().collect(Collectors.toMap(Function.identity(), domain -> {
             final Schedule schedule = new Schedule(revenue);
@@ -41,7 +41,8 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
         this.lastRenewOrUpdate = edits
                 .stream()
                 .filter(se -> se.getOperation() == SubscriptionEditOperation.REN || se.getOperation() == SubscriptionEditOperation.UPG)
-                .reduce((se1, se2) -> se2);
+                .reduce((se1, se2) -> se2)
+                .orElse(null);
         LocalDateRange range = null;
         for (final SubscriptionEdit edit: edits){
             range = edit.getRange().union(range);
@@ -49,11 +50,11 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
         for (final Service service: subscription.getServices()){
             range = service.getRange().union(range);
         }
-        this.range = Optional.ofNullable(range);
+        this.range = range;
     }
 
     public Optional<SubscriptionEdit> getLastRenewOrUpdate(){
-        return lastRenewOrUpdate;
+        return Optional.ofNullable(lastRenewOrUpdate);
     }
 
     public Subscription getSubscription() {
@@ -69,7 +70,7 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
     }
 
     public Optional<LocalDateRange> getRange() {
-        return range;
+        return Optional.ofNullable(range);
     }
 
     private static Map<Domain, BigDecimal> computeSplit(Map<Domain, Long> queryCounts){
@@ -164,6 +165,6 @@ public class SubscriptionItem implements Comparable<SubscriptionItem> {
 
     @Override
     public int compareTo(SubscriptionItem o) {
-        return lastRenewOrUpdate.map(SubscriptionEdit::getTo).orElse(LocalDate.MIN).compareTo(o.lastRenewOrUpdate.map(SubscriptionEdit::getTo).orElse(LocalDate.MIN));
+        return (lastRenewOrUpdate == null ? LocalDate.MIN : lastRenewOrUpdate.getTo()).compareTo(o.lastRenewOrUpdate == null ? LocalDate.MIN : o.lastRenewOrUpdate.getTo());
     }
 }
