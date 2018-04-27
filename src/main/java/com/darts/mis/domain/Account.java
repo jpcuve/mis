@@ -36,8 +36,6 @@ public class Account {
     private Set<Subscription> subscriptions;
     @OneToMany(mappedBy = "account")
     private Set<User> users;
-    @Transient
-    private Schedule revenue;
 
     public Long getId() {
         return id;
