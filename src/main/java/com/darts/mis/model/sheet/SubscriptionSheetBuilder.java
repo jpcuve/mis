@@ -56,7 +56,7 @@ public class SubscriptionSheetBuilder implements SheetBuilder {
         });
         for (final AccountItem accountItem: revenueModel.getAccountItems()) {
             for (final SubscriptionItem subscriptionItem: accountItem.getSubscriptionItems()){
-                if (subscriptionItem.getRange().isPresent() && range.isOverlapping(subscriptionItem.getRange().get())){
+                if (subscriptionItem.getRange().map(range::isOverlapping).orElse(false)){
                     final Row subscriptionRow = sheet.createRow(row.getAndIncrement());
                     final AtomicInteger subscriptionCol = new AtomicInteger();
                     subscriptionRow.createCell(subscriptionCol.getAndIncrement()).setCellValue(accountItem.getAccount().getId());

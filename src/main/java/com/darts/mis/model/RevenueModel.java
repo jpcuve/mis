@@ -76,22 +76,17 @@ public class RevenueModel {
     }
 
     public Optional<AccountItem> findAccount(long accountId){
-        for (final AccountItem accountItem: accountItems){
-            if (accountItem.getAccount().getId().equals(accountId)){
-                return Optional.of(accountItem);
-            }
-        }
-        return Optional.empty();
+        return  accountItems
+                .stream()
+                .filter(ai -> ai.getAccount().getId().equals(accountId))
+                .findFirst();
     }
 
     public Optional<SubscriptionItem> findSubscription(long subscriptionId){
-        for (final AccountItem accountItem: accountItems){
-            for (final SubscriptionItem subscriptionItem: accountItem.getSubscriptionItems()){
-                if (subscriptionItem.getSubscription().getId().equals(subscriptionId)){
-                    return Optional.of(subscriptionItem);
-                }
-            }
-        }
-        return Optional.empty();
+        return accountItems
+                .stream()
+                .flatMap(ai -> ai.getSubscriptionItems().stream())
+                .filter(si -> si.getSubscription().getId().equals(subscriptionId))
+                .findFirst();
     }
 }

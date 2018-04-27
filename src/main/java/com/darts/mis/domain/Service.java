@@ -38,7 +38,6 @@ public class Service {
         return range;
     }
 
-
     public Long getId() {
         return id;
     }

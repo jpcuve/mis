@@ -61,14 +61,12 @@ public class ApiController {
     public ObjectNode subscriptionRevenues(@PathVariable("id") final Long id){
         final LocalDate now = LocalDate.now();
         final ObjectNode ret = mapper.createObjectNode();
-        final Optional<SubscriptionItem> optionalSubscriptionItem = revenueModel.findSubscription(id);
-        if (optionalSubscriptionItem.isPresent()) {
-            final SubscriptionItem subscriptionItem = optionalSubscriptionItem.get();
+        revenueModel.findSubscription(id).ifPresent(subscriptionItem -> {
             final Map<Domain, Schedule> revenues = subscriptionItem.getRevenues();
             ret.putPOJO("revenues", revenues);
             final Map<Domain, Position> totals = revenues.keySet().stream().collect(Collectors.toMap(Function.identity(), d -> revenues.get(d).accumulatedTo(now)));
             ret.putPOJO("totals", totals);
-        }
+        });
         return ret;
     }
 
@@ -76,14 +74,12 @@ public class ApiController {
     public ObjectNode accountRevenues(@PathVariable("id") final Long id){
         final LocalDate now = LocalDate.now();
         final ObjectNode ret = mapper.createObjectNode();
-        final Optional<AccountItem> optionalAccountItem = revenueModel.findAccount(id);
-        if (optionalAccountItem.isPresent()) {
-            final AccountItem accountItem = optionalAccountItem.get();
+        revenueModel.findAccount(id).ifPresent(accountItem -> {
             final Map<Domain, Schedule> revenues = accountItem.getRevenues();
             ret.putPOJO("revenues", revenues);
             final Map<Domain, Position> totals = revenues.keySet().stream().collect(Collectors.toMap(Function.identity(), d -> revenues.get(d).accumulatedTo(now)));
             ret.putPOJO("totals", totals);
-        }
+        });
         return ret;
     }
 }
