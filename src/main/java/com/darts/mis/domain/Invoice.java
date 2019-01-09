@@ -19,9 +19,9 @@ public class Invoice {
     @ManyToOne
     @JoinColumn(name = "account_fk")
     private Account account;
-    @ManyToOne
-    @JoinColumn(name = "issuer_fk")
-    private Account issuer;
+    @Basic
+    @Column(name = "issuer_fk")
+    private Long issuer;
     @OneToMany(mappedBy = "invoice")
     private Set<InvoiceLine> lines;
 
@@ -57,11 +57,11 @@ public class Invoice {
         this.account = account;
     }
 
-    public Account getIssuer() {
+    public Long getIssuer() {
         return issuer;
     }
 
-    public void setIssuer(Account issuer) {
+    public void setIssuer(Long issuer) {
         this.issuer = issuer;
     }
 

@@ -1,15 +1,13 @@
 package com.darts.mis.domain;
 
-import com.darts.mis.Schedule;
-
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Table( name = "account")
 @NamedQueries({
-        @NamedQuery(name = Account.FULL_BY_IDS, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services left join fetch a.invoices i left join fetch i.lines il where a.id in (:ids)"),
-        @NamedQuery(name = Account.ACCOUNT_ALL, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services left join fetch a.invoices i left join fetch i.lines il"),
+        @NamedQuery(name = Account.FULL_BY_IDS, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services where a.id in (:ids)"),
+        @NamedQuery(name = Account.ACCOUNT_ALL, query = "select distinct a from Account a left join fetch a.users left join fetch a.subscriptions s left join fetch s.edits left join fetch s.services"),
 })
 public class Account {
     public static final String FULL_BY_IDS = "account.fullByIds";

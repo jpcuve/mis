@@ -12,14 +12,3 @@ spring:
 logging:
   level:
     com.darts.mis: info
----
-spring:
-  profiles: dev
-
-app:
-  account-ids: 4,6,28,67,1257,1682,6676,2225,2492,2499,2951,5860,6115
-
-logging:
-  level:
-    com.darts.mis: debug
-    org.hibernate.SQL: info
